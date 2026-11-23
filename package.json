@@ -1,0 +1,19 @@
+{
+  "name": "marstreak",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "start": "node --env-file=.env src/bot.js",
+    "test": "node --test test/*.test.js",
+    "preview:quests": "node scripts/preview-quests.js",
+    "backup": "node --env-file=.env src/backup.js"
+  },
+  "dependencies": {
+    "discord.js": "14.28.1",
+    "sharp": "^0.35.5"
+  }
+}
