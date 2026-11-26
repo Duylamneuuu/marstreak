@@ -1,0 +1,50 @@
+# Tính năng và cấu hình
+
+Mỗi ngày, MarStreak rút ba loại nhiệm vụ khác nhau từ `LAB_QUEST_POOL` mà thành viên đủ quyền làm. Gọi lại hoặc khởi động lại giữ bộ đã giao. Nếu còn dưới ba loại khả dụng, bot báo chưa ghi lượt điểm danh mới.
+
+## Cấu hình cơ bản
+
+Điền thông tin trong `.env` trên máy vận hành hoặc tệp cấu hình VPS. Để sao chép ID trong Discord, bật **Developer Mode**, rồi dùng **Copy Server ID**, **Copy Channel ID** hoặc **Copy Message ID**.
+
+| Biến | Cách điền |
+| --- | --- |
+| `DISCORD_TOKEN`, `DISCORD_APPLICATION_ID` | Token và Application ID của cùng một bot Discord. |
+| `DISCORD_GUILD_ID` | ID server đã cài app. |
+| `LAB_QUEST_POOL` | Mã quest cách nhau bằng dấu phẩy. Mẫu dùng `voice,reaction,community` để demo trên một server riêng. |
+| `LAB_VOICE_CHANNEL_IDS`, `LAB_VOICE_SECONDS` | ID các phòng Voice cách nhau bằng dấu phẩy và số giây bắt buộc. Mẫu để 120 giây. |
+| `CHECKIN_RESET_TIME`, `CHECKIN_DB_PATH` | Giờ làm mới theo giờ Việt Nam và vị trí SQLite. Mẫu để `00:00` và `data/checkins.sqlite`. |
+
+Bot cần thấy kênh được cấu hình. Thành viên cần vào được phòng Voice, mở được tin hoặc gửi được tin trong thread tương ứng. Cấp quyền theo kênh, không cần Administrator. [Discord Permissions](https://docs.discord.com/developers/topics/permissions)
+
+## Nhiệm vụ dự phòng
+
+| Tính năng | Bật | Tạm dừng hoặc đổi đích |
+| --- | --- | --- |
+| **Poll gốc Discord** | Tạo Poll đang mở trong kênh chữ. Điền link tin vào `LAB_POLL_MESSAGE_URL`, hạn vào `LAB_POLL_CLOSES_AT`, thêm `poll` vào danh sách. Thành viên và bot cần mở được tin. | Bỏ `poll` khỏi danh sách giao. Giữ link và hạn cho lượt đã giao. Nếu đóng hoặc xóa bài sớm, dừng giao ngay. |
+| **Gửi tin trong chủ đề** | Thêm `community`, đặt `LAB_COMMUNITY_THREAD_ID` là ID thread công khai, đang mở. | Bỏ `community` khỏi danh sách giao. Giữ ID thread tới hết ngày để người đã nhận làm tiếp. |
+| **Thả emoji vào tin chỉ định** | Đặt `LAB_REACTION_MODE=target`, điền `LAB_REACTION_CHANNEL_ID`, `LAB_REACTION_MESSAGE_ID`, `LAB_REACTION_EMOJI` (emoji Unicode hoặc ID emoji). | Đặt `LAB_REACTION_MODE=any` để tính lượt thả emoji mới vào mọi tin bot thấy. |
+
+Sửa cấu hình rồi khởi động lại. Với Poll, giờ đóng ghi theo dạng `2026-12-01T00:00:00+07:00`, bằng hoặc sớm hơn giờ đóng thật. Thành viên chọn một đáp án rồi bấm **Vote**. Đổi phiếu vẫn tính một lần. Bot dùng `GuildMessagePolls`, không lưu đáp án và không cần Message Content Intent. Discord có thể ẩn chi tiết của bài Poll do thành viên tạo, vì vậy Ops đối chiếu link và thời hạn bằng giao diện. [Tạo và vote Poll](https://support.discord.com/hc/en-us/articles/22163184112407-Polls-FAQ) · [Sự kiện Gateway](https://docs.discord.com/developers/events/gateway-events#message-poll-vote-add)
+
+Giữ ít nhất ba quest đủ điều kiện. Khi đổi đích hoặc luật, chọn sau giờ làm mới để người đã nhận vẫn làm đúng việc được giao. Để thử Poll chắc chắn nhận, dùng `voice,reaction,poll` với SQLite thử riêng.
+
+## Nhiệm vụ từ bot khác
+
+Cài app nguồn vào server bạn quản lý. Thử lệnh cho phản hồi công khai trong kênh và điền ID kênh tương ứng. MarStreak đối chiếu thông tin người gọi, app, lệnh, kênh và tin gốc do Discord cung cấp. Các app dưới đây đã được thử trong Lab. Cần thử lại quyền và phản hồi tại server mới. Không cần Message Content Intent.
+
+| Biến kênh | Bot và lệnh | Mã trong `LAB_QUEST_POOL` |
+| --- | --- | --- |
+| `LAB_WHEAT_TAROT_CHANNEL_ID` | Wheat `/tarot` | `wheat-tarot` |
+| `LAB_WHEAT_COINFLIP_CHANNEL_ID` | Wheat `/coinflip` | `wheat-coinflip` |
+| `LAB_ZODIAC_LIKES_CHANNEL_ID` | Zodiac `/likes` | `zodiac-likes` |
+| `LAB_ZODIAC_QUEST_CHANNEL_ID` | Zodiac `/compatibility`, `/crystal`, `/coinflip` | `zodiac-compatibility`, `zodiac-crystal`, `zodiac-coinflip` |
+| `LAB_DYNO_ROLL_CHANNEL_ID` | Dyno `/roll` | `dyno-roll` |
+| `LAB_ASTERIE_QUEST_CHANNEL_ID` | AsterieBot `/astrology`, `/astromeme` | `asterie-astrology`, `asterie-astromeme` |
+
+Bộ 11 loại từng dùng ở Lab khi đã cấu hình đủ kênh:
+
+```dotenv
+LAB_QUEST_POOL=voice,reaction,wheat-tarot,wheat-coinflip,zodiac-likes,zodiac-compatibility,zodiac-crystal,zodiac-coinflip,dyno-roll,asterie-astrology,asterie-astromeme
+```
+
+Khi có nhiều bot cùng lệnh như `/coinflip`, chọn đúng tên app ở bên phải trong menu Discord. Nếu muốn thử nhóm cố định, dùng đúng ba mã và một file SQLite riêng.

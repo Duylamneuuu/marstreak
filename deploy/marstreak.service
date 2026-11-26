@@ -1,0 +1,24 @@
+[Unit]
+Description=MarStreak Discord bot
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=marstreak
+Group=marstreak
+WorkingDirectory=/opt/marstreak
+ExecStart=/opt/marstreak-node/bin/node --env-file=/etc/marstreak/marstreak.env /opt/marstreak/src/bot.js
+StateDirectory=marstreak
+StateDirectoryMode=0700
+Restart=on-failure
+RestartSec=5s
+TimeoutStopSec=30s
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

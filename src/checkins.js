@@ -2,6 +2,13 @@ import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { randomInt } from 'node:crypto';
+import { dailyQuestCount } from './quest-pool.js';
+
+export class InsufficientQuestsError extends Error {
+  constructor() {
+    super('Cần ít nhất 3 nhiệm vụ khác nhau đã xác minh.');
+  }
+}
 
 const vietnamTime = new Intl.DateTimeFormat('en-CA', {
   timeZone: 'Asia/Ho_Chi_Minh',
@@ -117,13 +124,19 @@ export function openCheckInStore(databasePath, resetTime = '00:00') {
     if (existing.length) return existing;
 
     const pool = [...new Set(eligibleKinds)];
-    if (pool.length < 3) throw new Error('Cần ít nhất 3 nhiệm vụ khác nhau đã xác minh.');
-    for (let i = 0; i < 3; i++) {
+    if (pool.length < dailyQuestCount) throw new InsufficientQuestsError();
+    for (let i = 0; i < dailyQuestCount; i++) {
       const j = i + randomInt(pool.length - i);
       [pool[i], pool[j]] = [pool[j], pool[i]];
       insertQuest.run(guildId, userId, day, pool[i]);
     }
     return listQuests.all(guildId, userId, day);
+  }
+
+  function addVoiceTime(guildId, userId, day, milliseconds, threshold, now) {
+    const result = creditVoice.get(milliseconds, threshold, milliseconds, threshold,
+      now.toISOString(), guildId, userId, day);
+    return Boolean(result?.completed_at);
   }
 
   return {
@@ -135,16 +148,19 @@ export function openCheckInStore(databasePath, resetTime = '00:00') {
       return checkInDay(now, resetMinutes);
     },
 
-    completeQuest(guildId, userId, day, kind, now = new Date()) {
-      if (checkInDay(now, resetMinutes) !== day) return false;
+    completeQuest(guildId, userId, day, kind, now = new Date(), startedAt = now) {
+      if (startedAt > now || checkInDay(now, resetMinutes) !== day || checkInDay(startedAt, resetMinutes) !== day) return false;
       const occurredAt = now.toISOString();
-      return complete.run(occurredAt, guildId, userId, day, kind, occurredAt).changes === 1;
+      return complete.run(occurredAt, guildId, userId, day, kind, startedAt.toISOString()).changes === 1;
     },
 
-    addVoiceTime(guildId, userId, day, milliseconds, threshold, now) {
-      const result = creditVoice.get(milliseconds, threshold, milliseconds, threshold,
-        now.toISOString(), guildId, userId, day);
-      return Boolean(result?.completed_at);
+    addVoiceTime,
+
+    addVoiceBatch(guildId, day, intervals, threshold, now) {
+      // One commit per tick, and completion notifications are sent only after it succeeds.
+      return transaction(() => intervals
+        .filter(({ userId, elapsed }) => addVoiceTime(guildId, userId, day, elapsed, threshold, now))
+        .map(({ userId }) => userId));
     },
     recordCheckIn(guildId, userId, now = new Date(), eligibleKinds) {
       const day = checkInDay(now, resetMinutes);

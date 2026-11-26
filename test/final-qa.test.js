@@ -52,6 +52,37 @@ test('Voice đổi sang phòng không hợp lệ rồi trở lại giữ tiến 
   assert.deepEqual(completions, [['a', day]]);
 });
 
+test('Voice ghi cả tick cùng lúc, báo hoàn thành sau commit và giữ riêng từng người', t => {
+  const store = openCheckInStore(':memory:');
+  t.after(() => store.close());
+  for (const user of ['a', 'b']) store.recordCheckIn('lab', user, now, pool);
+  const completed = [];
+  const voice = trackVoice(store, 'lab', (user, completedDay) => {
+    assert.ok(store.getQuests('lab', user, completedDay).find(q => q.kind === 'voice').completed_at);
+    completed.push(user);
+  }, 10_000);
+  const start = now.getTime();
+  for (const user of ['a', 'b', 'without-checkin']) voice.update(user, true, start);
+  voice.tick(start + 5000);
+  const progress = user => store.getQuests('lab', user, day).find(q => q.kind === 'voice').voice_ms;
+  assert.equal(progress('a'), 5000);
+  assert.equal(progress('b'), 5000);
+  assert.deepEqual(store.getQuests('lab', 'without-checkin', day), []);
+  assert.deepEqual(completed, []);
+
+  assert.throws(() => store.addVoiceBatch('lab', day, [
+    { userId: 'a', elapsed: 5000 }, { userId: 'b', elapsed: null },
+  ], 10_000, new Date(start + 10_000)), /NOT NULL/);
+  assert.equal(progress('a'), 5000);
+  assert.equal(progress('b'), 5000);
+
+  voice.tick(start + 10_000);
+  voice.tick(start + 15_000);
+  assert.equal(progress('a'), 10_000);
+  assert.equal(progress('b'), 10_000);
+  assert.deepEqual(completed, ['a', 'b']);
+});
+
 test('nhiều kết nối check-in và hoàn thành đồng thời, khôi phục bản backup trên file riêng', async t => {
   const root = resolve('data');
   mkdirSync(root, { recursive: true });

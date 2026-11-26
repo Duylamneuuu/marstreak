@@ -3,7 +3,7 @@ import { renderQuestCard } from '../src/quest-visual.js';
 
 const output = new URL('../previews/', import.meta.url);
 await mkdir(output, { recursive: true });
-const kinds = ['community', 'reaction', 'voice'];
+const kinds = ['wheat-tarot', 'reaction', 'voice'];
 const voiceSeconds = 120;
 
 for (let done = 0; done <= kinds.length; done++) {

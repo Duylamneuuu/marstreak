@@ -10,7 +10,9 @@ export function makeCheckInReply({ created, streak }) {
     .setTitle(created
       ? 'Hí hô Wủy Con, điểm danh xong rùi! ✨'
       : 'Hôm nay Wủy Con điểm danh rùi 👀')
-    .setDescription('Mai ghé lại giữ chuỗi nha!')
+    .setDescription(created
+      ? 'Ba nhiệm vụ hôm nay ở ngay bên dưới nha.'
+      : 'Wủy giữ bộ nhiệm vụ hôm nay để bạn làm tiếp nha.')
     .setThumbnail(`attachment://${thumbnailName}`)
     .addFields({ name: 'Chuỗi điểm danh', value: `🔥 **${streak} ngày liên tiếp**` });
 
