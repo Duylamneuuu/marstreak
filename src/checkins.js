@@ -4,12 +4,6 @@ import { DatabaseSync } from 'node:sqlite';
 import { randomInt } from 'node:crypto';
 import { dailyQuestCount } from './quest-pool.js';
 
-export class InsufficientQuestsError extends Error {
-  constructor() {
-    super('Cần ít nhất 3 nhiệm vụ khác nhau đã xác minh.');
-  }
-}
-
 const vietnamTime = new Intl.DateTimeFormat('en-CA', {
   timeZone: 'Asia/Ho_Chi_Minh',
   year: 'numeric',
@@ -35,7 +29,7 @@ function previousDay(day) {
   return date.toISOString().slice(0, 10);
 }
 
-function checkInDay(now, resetMinutes) {
+export function checkInDay(now, resetMinutes) {
   const parts = Object.fromEntries(
     vietnamTime.formatToParts(now).map(({ type, value }) => [type, value]),
   );
@@ -71,6 +65,13 @@ export function openCheckInStore(databasePath, resetTime = '00:00') {
     ) STRICT;
   `);
 
+  // Add the assignment boundary to databases created before delayed assignment.
+  transaction(() => {
+    if (!db.prepare('PRAGMA table_info(daily_quests)').all().some(column => column.name === 'assigned_at')) {
+      db.exec('ALTER TABLE daily_quests ADD COLUMN assigned_at TEXT');
+    }
+  });
+  const hasCheckIn = db.prepare('SELECT 1 FROM checkins WHERE guild_id=? AND user_id=? AND checkin_day=?');
   const insertCheckIn = db.prepare(`
     INSERT INTO checkins (guild_id, user_id, checkin_day, checked_in_at)
     VALUES (?, ?, ?, ?)
@@ -87,7 +88,7 @@ export function openCheckInStore(databasePath, resetTime = '00:00') {
     WHERE guild_id = ? AND user_id = ? AND day = ? ORDER BY rowid
   `);
   const insertQuest = db.prepare(`
-    INSERT INTO daily_quests (guild_id, user_id, day, kind) VALUES (?, ?, ?, ?)
+    INSERT INTO daily_quests (guild_id, user_id, day, kind, assigned_at) VALUES (?, ?, ?, ?, ?)
   `);
   const complete = db.prepare(`
     UPDATE daily_quests SET completed_at = ?
@@ -96,7 +97,7 @@ export function openCheckInStore(databasePath, resetTime = '00:00') {
       SELECT 1 FROM checkins
       WHERE checkins.guild_id = daily_quests.guild_id
         AND checkins.user_id = daily_quests.user_id
-        AND checkin_day = daily_quests.day AND checked_in_at <= ?
+        AND checkin_day = daily_quests.day AND max(checked_in_at, coalesce(daily_quests.assigned_at, checked_in_at)) <= ?
     )
   `);
   const creditVoice = db.prepare(`
@@ -119,16 +120,16 @@ export function openCheckInStore(databasePath, resetTime = '00:00') {
     }
   }
 
-  function getOrAssignQuests(guildId, userId, day, eligibleKinds) {
+  function getOrAssignQuests(guildId, userId, day, eligibleKinds, now) {
     const existing = listQuests.all(guildId, userId, day);
     if (existing.length) return existing;
 
     const pool = [...new Set(eligibleKinds)];
-    if (pool.length < dailyQuestCount) throw new InsufficientQuestsError();
+    if (pool.length < dailyQuestCount) return [];
     for (let i = 0; i < dailyQuestCount; i++) {
       const j = i + randomInt(pool.length - i);
       [pool[i], pool[j]] = [pool[j], pool[i]];
-      insertQuest.run(guildId, userId, day, pool[i]);
+      insertQuest.run(guildId, userId, day, pool[i], now.toISOString());
     }
     return listQuests.all(guildId, userId, day);
   }
@@ -142,6 +143,12 @@ export function openCheckInStore(databasePath, resetTime = '00:00') {
   return {
     getQuests(guildId, userId, day) {
       return listQuests.all(guildId, userId, day);
+    },
+
+    questsAfterCheckIn(guildId, userId, now, eligibleKinds) {
+      const day = checkInDay(now, resetMinutes);
+      if (!hasCheckIn.get(guildId, userId, day)) return null;
+      return transaction(() => getOrAssignQuests(guildId, userId, day, eligibleKinds, now));
     },
 
     currentDay(now = new Date()) {
@@ -176,7 +183,7 @@ export function openCheckInStore(databasePath, resetTime = '00:00') {
         }
 
         const checkIn = { day, streak, created: result.changes === 1 };
-        if (eligibleKinds) checkIn.quests = getOrAssignQuests(guildId, userId, day, eligibleKinds);
+        if (eligibleKinds) checkIn.quests = getOrAssignQuests(guildId, userId, day, eligibleKinds, now);
         return checkIn;
       });
     },

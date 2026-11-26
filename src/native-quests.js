@@ -34,6 +34,16 @@ export function createNativeQuests(config) {
   const canJoin = (room, member) => room?.type === ChannelType.GuildVoice
     && hasPermissions(room, member, [view, PermissionFlagsBits.Connect]);
 
+  function reactionRoom(context) {
+    if (!context?.botMember) return undefined;
+    for (const [id, room] of context.channels) {
+      if (room.type === ChannelType.GuildText && hasPermissions(room, context.botMember, view)
+        && hasPermissions(room, context.member, [view, PermissionFlagsBits.ReadMessageHistory, PermissionFlagsBits.AddReactions])) {
+        return id;
+      }
+    }
+  }
+
   return [
     {
       kind: 'voice',
@@ -52,8 +62,9 @@ export function createNativeQuests(config) {
       kind: 'reaction',
       name: 'Thả emoji',
       defaultEnabled: true,
-      eligible: ({ channels, member }) => {
-        if (!reactionTarget) return true;
+      eligible: context => {
+        if (!reactionTarget) return Boolean(reactionRoom(context));
+        const { channels, member } = context;
         const room = channels.get(reactionTarget.channelId);
         const message = room?.messages?.cache.get(reactionTarget.messageId);
         return room?.type === ChannelType.GuildText && Boolean(message)
@@ -61,8 +72,11 @@ export function createNativeQuests(config) {
           && (hasPermissions(room, member, PermissionFlagsBits.AddReactions)
             || message.reactions.cache.has(reactionTarget.emoji));
       },
-      instruction: () => {
-        if (!reactionTarget) return 'Thả một emoji mới vào một tin nhắn trong server này.';
+      instruction: (_assignment, context) => {
+        if (!reactionTarget) {
+          const example = reactionRoom(context);
+          return 'Thả một emoji mới vào một tin ở kênh Wủy nhìn thấy' + (example ? ', ví dụ <#' + example + '>.' : '.');
+        }
         const link = guildLink + reactionTarget.channelId + '/' + reactionTarget.messageId;
         const emoji = /^\d{17,20}$/.test(reactionTarget.emoji) ? 'emoji đã chọn' : reactionTarget.emoji;
         return 'Thả ' + emoji + ' vào [tin nhắn này](<' + link + '>).';

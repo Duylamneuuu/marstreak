@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { DatabaseSync } from 'node:sqlite';
 import { join, resolve } from 'node:path';
 import { test } from 'node:test';
 import { openCheckInStore } from '../src/checkins.js';
@@ -48,12 +49,17 @@ test('pool 6 quest chọn đúng 3 khác nhau, lưu thứ tự và giữ kết q
   }
 });
 
-test('pool dưới 3 quest hủy cả lần ghi điểm danh, lần thử lại vẫn ghi lần đầu', t => {
+test('thiếu quest vẫn giữ streak và chỉ nhận việc khi đã đủ ba loại', t => {
   const store = openCheckInStore(':memory:');
   t.after(() => store.close());
-  assert.throws(() => store.recordCheckIn('lab', 'one', now, ['voice', 'voice', 'reaction']), /ít nhất 3/);
+  assert.equal(store.questsAfterCheckIn('lab', 'one', now, pool), null);
+  assert.deepEqual(store.recordCheckIn('lab', 'one', now, ['voice', 'voice', 'reaction']).quests, []);
   assert.deepEqual(store.getQuests('lab', 'one', day), []);
-  assert.equal(store.recordCheckIn('lab', 'one', now, pool).created, true);
+  const later = new Date(+now + 10000);
+  assert.equal(store.questsAfterCheckIn('lab', 'one', later, pool).length, 3);
+  assert.equal(store.completeQuest('lab', 'one', day, 'reaction', later, now), false);
+  assert.equal(store.recordCheckIn('lab', 'one', later, pool).created, false);
+  assert.equal(store.recordCheckIn('lab', 'one', new Date(+now + 86400000), []).streak, 2);
 });
 
 test('Voice cộng từng đoạn, bỏ thời gian giữa hai lần kết nối và chỉ hoàn thành một lần', t => {
@@ -103,4 +109,30 @@ test('reset 00:00 VN tách lịch sử và Voice không backfill qua ngày hoặ
   voice.tick(midnight + 65_000);
   assert.equal(store.getQuests('lab', 'one', '2026-11-22').find(q => q.kind === 'voice').voice_ms, 5000);
   assert.ok(store.getQuests('lab', 'one', day).find(q => q.kind === 'reaction').completed_at);
+});
+
+test('mở lại dữ liệu cũ và nhận quest muộn từ hai kết nối', t => {
+  mkdirSync('data', { recursive: true });
+  const dir = mkdtempSync(join(resolve('data'), 'upgrade-test-'));
+  const path = join(dir, 'old.sqlite');
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const legacy = new DatabaseSync(path);
+  legacy.exec(`CREATE TABLE daily_quests (
+    guild_id TEXT, user_id TEXT, day TEXT, kind TEXT, completed_at TEXT,
+    voice_ms INTEGER DEFAULT 0, PRIMARY KEY (guild_id,user_id,day,kind)
+  ) STRICT`);
+  legacy.prepare('INSERT INTO daily_quests VALUES (?,?,?,?,?,?)').run('lab','old',day,'voice',null,9000);
+  legacy.close();
+  const a = openCheckInStore(path);
+  const b = openCheckInStore(path);
+  try {
+    assert.equal(a.getQuests('lab', 'old', day)[0].voice_ms, 9000);
+    a.recordCheckIn('lab', 'new', now, []);
+    const first = b.questsAfterCheckIn('lab', 'new', now, pool);
+    assert.equal(first.length, 3);
+    assert.deepEqual(a.questsAfterCheckIn('lab', 'new', now, ['x','y','z']), first);
+  } finally {
+    a.close();
+    b.close();
+  }
 });

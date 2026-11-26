@@ -30,3 +30,7 @@ Bản 26/11/2026. Phần sản phẩm đã có bản Lab để nghiệm thu. Ng�
 Quest lệnh bot ngoài tính lượt gọi đúng có xác nhận công khai. Nếu Lead yêu cầu Wheat **trải đúng một lá**, cần nguồn xác nhận số lá. Các hạng mục xem Rank, Wordle, tự tạo Poll, XP, xu và role cần quyết định riêng trước khi triển khai.
 
 Lead có thể xem demo và phân công. Người vận hành dùng quyền và thông tin được cấp, kiểm tra một lượt trên server thử trước khi chạy cho thành viên.
+
+## Cập nhật sau khi sửa ngày 26/11
+
+Hai bản source đạt 39/39 test. Thành viên giữ streak khi thiếu quest và có thể nhận bộ ba sau đó bằng `/quests`. Bot xếp thứ tự gửi DM theo từng người, gợi ý kênh Reaction cả thành viên và bot cùng thấy, kiểm tra sự hiện diện của bot nguồn khi khởi động và chỉ giao Poll còn mở tới kỳ reset. Bảng quest có chữ lớn hơn. DM có số tiến độ và tên việc vừa xong. Đã kiểm tra ảnh thu nhỏ 320 px và khởi động bản sửa qua Gateway Lab bằng SQLite QA riêng. Chưa chạy lại toàn bộ 0/3 đến 3/3 trên hai tài khoản sau bản sửa. Quyền dùng từng lệnh theo role, việc đóng Poll thủ công sớm và kiểm thử VPS vẫn cần Ops xác nhận.

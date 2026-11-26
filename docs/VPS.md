@@ -92,3 +92,7 @@ sudo -u marstreak /opt/marstreak-node/bin/node --env-file=/etc/marstreak/marstre
 | Thẻ thiếu ảnh | Kiểm tra các PNG trong `assets/` và dependency Sharp. Hướng dẫn dạng chữ vẫn hiện trong embed. |
 
 Mẫu dịch vụ và quy trình trên dành cho máy vận hành. Kết quả Lab và regression trong repo là cơ sở để nghiệm thu. Kiểm tra VPS thật, lưu bản sao và quyền role tại server nhận bàn giao trước khi mở.
+
+## Yêu cầu xóa dữ liệu thành viên
+
+Ops nhận yêu cầu qua kênh riêng, xác nhận tài khoản Discord của người yêu cầu và đúng server. SQLite lưu lượt điểm danh, tiến độ quest và thời gian Voice theo ID. Thử quy trình trên bản sao trước. Khi được phép xử lý, dừng dịch vụ, dùng một giao dịch SQLite có tham số để xóa các hàng khớp cả guild_id và user_id ở daily_quests và checkins. Kiểm tra cả hai bảng trả về 0 hàng cho cặp ID đó trước khi commit. Bật lại dịch vụ, ghi ngày xử lý vào sổ vận hành hạn chế truy cập. Khi phục hồi backup cũ, áp dụng lại yêu cầu xóa trước khi bật bot. Lead và Ops điền người tiếp nhận, thời hạn lưu dữ liệu và vòng đời bản sao trước khi chạy chính thức.

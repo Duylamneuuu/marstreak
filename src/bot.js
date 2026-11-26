@@ -4,10 +4,10 @@ import {
 } from 'discord.js';
 import { resolve } from 'node:path';
 import { verifyTargets } from './lab-targets.js';
-import { deliverQuestUpdate } from './quest-notification.js';
+import { createNotificationQueue, deliverQuestUpdate } from './quest-notification.js';
 import { makeCheckInReply } from './checkin-reply.js';
 import { makeQuestBoard, makeQuestUpdate, questRefreshId } from './quest-reply.js';
-import { InsufficientQuestsError, openCheckInStore, parseResetTime } from './checkins.js';
+import { openCheckInStore, parseResetTime } from './checkins.js';
 import { trackVoice, voiceThresholdMs, voiceTickMs } from './voice-quests.js';
 import { createQuestPool } from './quest-pool.js';
 import { createNativeQuests } from './native-quests.js';
@@ -77,8 +77,9 @@ function errorLabel(error) {
 
 async function start(config) {
   const commandIds = new Map();
+  const sourceBots = new Map();
   const commandQuests = createLabCommandQuests(config);
-  const definitions = [...createNativeQuests(config), createPollQuest(config.pollTarget), ...commandQuests];
+  const definitions = [...createNativeQuests(config), createPollQuest(config.pollTarget, config.resetTime), ...commandQuests];
   const pool = createQuestPool(definitions, config.questKinds);
   const store = openCheckInStore(config.databasePath, config.resetTime);
   const client = new Client({
@@ -97,12 +98,14 @@ async function start(config) {
   let stopping = false;
   let voiceTimer;
 
-  async function notify(userId, kind, day) {
+  const enqueue = createNotificationQueue();
+  function notify(userId, kind, day) {
     const progress = store.getQuests(config.guildId, userId, day);
-    // Persist first. Discord can reject a DM even when the quest was completed.
-    const visual = await makeQuestUpdate(progress, kind, { pool, voiceSeconds: config.voiceSeconds });
-    await deliverQuestUpdate(client.users, userId, visual, error => {
-      console.log('Không gửi được DM (' + errorLabel(error) + '). Xem /quests để kiểm tra tiến độ.');
+    return enqueue(userId, async () => {
+      const visual = await makeQuestUpdate(progress, kind, { pool, voiceSeconds: config.voiceSeconds });
+      await deliverQuestUpdate(client.users, userId, visual, error => {
+        console.log('Không gửi được DM (' + errorLabel(error) + '). Xem /quests để kiểm tra tiến độ.');
+      });
     });
   }
 
@@ -170,6 +173,14 @@ async function start(config) {
       if (readyClient.application.id !== config.appId) throw new Error('Token không thuộc app đã cấu hình.');
       const guild = await readyClient.guilds.fetch(config.guildId);
       await verifyTargets(guild, config);
+      for (const id of new Set(commandQuests.map(quest => quest.sourceBotId))) {
+        try {
+          const bot = await guild.members.fetch(id);
+          if (bot.user.bot) sourceBots.set(id, bot);
+        } catch (error) {
+          console.warn('Tạm dừng giao quest từ bot ' + id + ' (' + errorLabel(error) + ').');
+        }
+      }
       for (const command of commands) {
         const registered = await readyClient.rest.post(Routes.applicationGuildCommands(config.appId, guild.id), {
           body: command.toJSON(),
@@ -208,19 +219,21 @@ async function start(config) {
       const context = interaction.inCachedGuild() ? {
         channels: interaction.guild.channels.cache,
         member: interaction.member,
+        botMember: interaction.guild.members.me,
+        sourceBots,
         at,
       } : undefined;
       const boardOptions = {
         pool, context, voiceSeconds: config.voiceSeconds, resetTime: config.resetTime,
         checkInCommand: commandMention('checkin'),
       };
+      voice.checkpoint(userId, Date.now());
+      const eligibleKinds = context ? pool.eligibleKinds(context) : [];
       if (refresh || interaction.commandName === 'quests') {
-        const quests = store.getQuests(config.guildId, userId, store.currentDay(at));
+        const quests = store.questsAfterCheckIn(config.guildId, userId, at, eligibleKinds);
         await interaction.editReply(await makeQuestBoard(quests, boardOptions));
         return;
       }
-      voice.checkpoint(userId, Date.now());
-      const eligibleKinds = context ? pool.eligibleKinds(context) : [];
       const result = store.recordCheckIn(config.guildId, userId, at, eligibleKinds);
       await interaction.editReply(makeCheckInReply(result));
       checkInShown = true;
@@ -229,10 +242,6 @@ async function start(config) {
         flags: MessageFlags.Ephemeral,
       });
     } catch (error) {
-      if (error instanceof InsufficientQuestsError) {
-        await interaction.editReply('Chưa có đủ ba nhiệm vụ bạn có thể làm nên Wủy chưa ghi lượt điểm danh. Nhờ quản trị viên kiểm tra quyền vào các kênh nha.');
-        return;
-      }
       console.error('Không trả được ' + (refresh ? 'tiến độ' : '/' + interaction.commandName) + ' (' + errorLabel(error) + ').');
       if (checkInShown) {
         await interaction.editReply({ content: 'Điểm danh đã lưu. Dùng ' + commandMention('quests') + ' để mở nhiệm vụ nha.' });

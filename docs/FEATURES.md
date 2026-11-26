@@ -1,6 +1,6 @@
 # Tính năng và cấu hình
 
-Mỗi ngày, MarStreak rút ba loại nhiệm vụ khác nhau từ `LAB_QUEST_POOL` mà thành viên đủ quyền làm. Gọi lại hoặc khởi động lại giữ bộ đã giao. Nếu còn dưới ba loại khả dụng, bot báo chưa ghi lượt điểm danh mới.
+Mỗi ngày, MarStreak rút ba loại nhiệm vụ khác nhau từ `LAB_QUEST_POOL` mà thành viên đủ quyền làm. Gọi lại hoặc khởi động lại giữ bộ đã giao. Nếu còn dưới ba loại khả dụng, bot giữ streak. Dùng lại `/quests` khi đủ ba loại để nhận việc.
 
 ## Cấu hình cơ bản
 
@@ -48,3 +48,5 @@ LAB_QUEST_POOL=voice,reaction,wheat-tarot,wheat-coinflip,zodiac-likes,zodiac-com
 ```
 
 Khi có nhiều bot cùng lệnh như `/coinflip`, chọn đúng tên app ở bên phải trong menu Discord. Nếu muốn thử nhóm cố định, dùng đúng ba mã và một file SQLite riêng.
+
+Khi bật Poll, chọn bài còn mở tới ít nhất kỳ làm mới tiếp theo. Giữ bài đang mở đến hạn. Khi bật quest bot ngoài, kiểm tra lệnh bằng role thành viên thường. MarStreak kiểm tra bot nguồn khi khởi động và quyền nhìn thấy kênh khi giao việc. Sau khi mời lại app hoặc khôi phục quyền truy cập bot nguồn, khởi động lại và thử lệnh trước khi mở cho thành viên.

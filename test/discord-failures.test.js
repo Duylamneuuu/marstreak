@@ -60,3 +60,18 @@ test('DM bị Discord từ chối hoặc timeout không thay đổi quest đã g
   assert.equal(store.getQuests('lab', 'user', day).find(q => q.kind === 'reaction').completed_at, when.toISOString());
   assert.equal(store.completeQuest('lab', 'user', day, 'reaction', when), false);
 });
+
+test('DM đợi lượt trước, lỗi gửi không chặn lượt sau hay người khác', async () => {
+  const { createNotificationQueue } = await import('../src/quest-notification.js');
+  const enqueue = createNotificationQueue();
+  const order = [];
+  let release;
+  const waiting = new Promise(resolve => { release = resolve; });
+  const first = enqueue('a', async () => { await waiting; order.push(1); throw new Error('DM'); });
+  const second = enqueue('a', () => order.push(2));
+  await enqueue('b', () => order.push('b'));
+  release();
+  await assert.rejects(first, /DM/);
+  await second;
+  assert.deepEqual(order, ['b', 1, 2]);
+});

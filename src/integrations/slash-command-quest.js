@@ -31,10 +31,12 @@ export function createSlashCommandQuest(definition) {
   return {
     kind,
     name,
+    sourceBotId: definition.authorId ?? definition.appId,
     defaultEnabled: false,
-    eligible: ({ channels, member }) => {
+    eligible: ({ channels, member, sourceBots }) => {
       const channel = channels.get(channelId);
-      return channel?.type === ChannelType.GuildText && Boolean(member && channel.permissionsFor(member)?.has([
+      const bot = sourceBots?.get(definition.authorId ?? definition.appId);
+      return channel?.type === ChannelType.GuildText && Boolean(bot && channel.permissionsFor(bot)?.has(PermissionFlagsBits.ViewChannel)) && Boolean(member && channel.permissionsFor(member)?.has([
         PermissionFlagsBits.ViewChannel, PermissionFlagsBits.UseApplicationCommands,
       ]));
     },

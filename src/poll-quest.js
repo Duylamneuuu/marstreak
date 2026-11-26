@@ -1,3 +1,4 @@
+import { checkInDay, parseResetTime } from './checkins.js';
 import { ChannelType, PermissionFlagsBits } from 'discord.js';
 
 const pollMessageUrl = /^https:\/\/discord\.com\/channels\/(\d{17,20})\/(\d{17,20})\/(\d{17,20})\/?$/;
@@ -20,7 +21,9 @@ export function readPollTarget(guildId, messageUrl, closesAt, questKinds) {
   return { guildId, channelId: match[2], messageId: match[3], url, deadline };
 }
 
-export function createPollQuest(target) {
+export function createPollQuest(target, resetTime = '00:00') {
+  const resetMinutes = parseResetTime(resetTime);
+  const deadlineDay = target && checkInDay(new Date(target.deadline), resetMinutes);
   const permissions = [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.ReadMessageHistory];
   const visibleDeadline = target && new Intl.DateTimeFormat('vi-VN', {
     timeZone: 'Asia/Ho_Chi_Minh', dateStyle: 'short', timeStyle: 'short',
@@ -30,7 +33,7 @@ export function createPollQuest(target) {
     name: 'Bình chọn',
     defaultEnabled: false,
     eligible({ channels, member, at = new Date() }) {
-      if (!target || +at >= target.deadline) return false;
+      if (!target || checkInDay(at, resetMinutes) >= deadlineDay) return false;
       const room = channels.get(target.channelId);
       return room?.type === ChannelType.GuildText && Boolean(member && room.permissionsFor(member)?.has(permissions));
     },

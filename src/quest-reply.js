@@ -12,9 +12,9 @@ const progressCopy = [
 ];
 
 export async function makeQuestBoard(quests, { pool, context, voiceSeconds, resetTime, checkInCommand }) {
-  if (!quests.length) {
+  if (!quests?.length) {
     return {
-      content: 'Chưa có nhiệm vụ hôm nay. Wủy Con dùng ' + checkInCommand + ' để nhận ba việc nha.',
+      content: Array.isArray(quests) ? 'Đã điểm danh. Wủy đang chờ đủ ba việc bạn có thể làm. Bạn mở lại `/quests` sau nha.' : 'Chưa có nhiệm vụ hôm nay. Wủy Con dùng ' + checkInCommand + ' để nhận ba việc nha.',
       embeds: [],
       components: [],
     };
@@ -47,5 +47,5 @@ export async function makeQuestUpdate(quests, kind, { pool, voiceSeconds }) {
     : '✅ Đã tính **' + pool.name(kind) + '** nha.';
   const content = heading + '\n**' + done + '/' + dailyQuestCount
     + '** hôm nay. Xem lại bằng `/quests` trong server.';
-  return questVisual(content, quests, voiceSeconds, { compact: true });
+  return questVisual(content, quests, voiceSeconds, { compact: true, completedKind: kind });
 }

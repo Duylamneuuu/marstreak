@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { ChannelType, MessageType, PermissionFlagsBits as Permissions } from 'discord.js';
-import { InsufficientQuestsError, openCheckInStore } from '../src/checkins.js';
+import { openCheckInStore } from '../src/checkins.js';
 import { createNativeQuests } from '../src/native-quests.js';
 import { createLabCommandQuests } from '../src/integrations/lab-command-quests.js';
 import { createQuestPool } from '../src/quest-pool.js';
@@ -28,6 +28,7 @@ function targets() {
   return new Map([
     ['voice-room', channel(ChannelType.GuildVoice, Permissions.ViewChannel, Permissions.Connect)],
     ['thread', thread],
+    ['sample', channel(ChannelType.GuildText, Permissions.ViewChannel, Permissions.ReadMessageHistory, Permissions.AddReactions)],
   ]);
 }
 
@@ -50,7 +51,7 @@ function post(userId, createdTimestamp = Number(at)) {
 
 test('pool mặc định bật đúng ba quest native, từ chối tên chưa đăng ký và cấu hình lặp', () => {
   const definitions = createNativeQuests(config, () => []);
-  const context = { channels: targets(), member: { denied: new Set() } };
+  const context = { channels: targets(), botMember: { denied: new Set() }, member: { denied: new Set() } };
   assert.deepEqual(createQuestPool(definitions).eligibleKinds(context), ['voice', 'reaction', 'community']);
   assert.throws(() => createQuestPool(definitions, 'voice,community,tarot'), /chưa đăng ký/);
   assert.throws(() => createQuestPool(definitions, 'voice,community,voice'), /trùng/);
@@ -60,7 +61,7 @@ test('pool mặc định bật đúng ba quest native, từ chối tên chưa đ
 test('lọc theo quyền thật của thành viên và đích còn dùng được trước khi giao', () => {
   const pool = nativePool();
   const channels = targets();
-  const context = { channels, member: { denied: new Set([Permissions.Connect]) } };
+  const context = { channels, botMember: { denied: new Set() }, member: { denied: new Set([Permissions.Connect]) } };
   assert.deepEqual(pool.eligibleKinds(context), ['reaction', 'community']);
   channels.get('thread').archived = true;
   assert.deepEqual(pool.eligibleKinds(context), ['reaction']);
@@ -86,7 +87,9 @@ test('pool Lab có 11 quest, giao đúng ba loại và giữ lượt cũ khi c�
   const pool = createQuestPool(definitions, enabled.join(','));
   const channels = targets();
   channels.set('text', { type: ChannelType.GuildText, permissionsFor: () => ({ has: () => true }) });
-  const eligible = pool.eligibleKinds({ channels, member: { denied: new Set() } });
+  const sourceBots = new Map(external.map(quest => [quest.sourceBotId, { denied: new Set() }]));
+  assert.equal(external[0].eligible({ channels, member: {} }), false);
+  const eligible = pool.eligibleKinds({ channels, sourceBots, botMember: { denied: new Set() }, member: { denied: new Set() } });
   assert.equal(external.length, 9);
   assert.equal(eligible.length, 11);
   assert.deepEqual(eligible, enabled);
@@ -105,12 +108,12 @@ test('check-in đang có giữ assignment, kể cả khi quyền thử quest tha
   const pool = nativePool();
   const store = openCheckInStore(':memory:');
   t.after(() => store.close());
-  const allowed = { channels: targets(), member: { denied: new Set() } };
-  const blocked = { ...allowed, member: { denied: new Set([Permissions.Connect]) } };
+  const allowed = { channels: targets(), botMember: { denied: new Set() }, member: { denied: new Set() } };
+  const blocked = { ...allowed, botMember: { denied: new Set() }, member: { denied: new Set([Permissions.Connect]) } };
   const first = store.recordCheckIn('lab', 'a', at, pool.eligibleKinds(allowed));
   assert.deepEqual(store.recordCheckIn('lab', 'a', at, pool.eligibleKinds(blocked)).quests, first.quests);
-  assert.throws(() => store.recordCheckIn('lab', 'b', at, pool.eligibleKinds(blocked)), InsufficientQuestsError);
-  assert.equal(store.recordCheckIn('lab', 'b', at, pool.eligibleKinds(allowed)).created, true);
+  assert.deepEqual(store.recordCheckIn('lab', 'b', at, pool.eligibleKinds(blocked)).quests, []);
+  assert.equal(store.recordCheckIn('lab', 'b', at, pool.eligibleKinds(allowed)).created, false);
 });
 
 test('Reaction nhận emoji mới từ bất kỳ kênh nào trong guild và ghi một lần cho đúng người', t => {
@@ -166,11 +169,20 @@ test('gỡ một quest khỏi giao mới vẫn cho phép xử lý assignment đa
   const pool = createQuestPool([
     ...definitions, { kind: 'fixture', eligible: () => true },
   ], 'voice,community,fixture');
-  const context = { channels: targets(), member: { denied: new Set() } };
+  const context = { channels: targets(), botMember: { denied: new Set() }, member: { denied: new Set() } };
   assert.deepEqual(pool.eligibleKinds(context), ['voice', 'community', 'fixture']);
   store.recordCheckIn('lab', 'a', at, ['voice', 'reaction', 'community']);
   assert.equal(pool.completeFromEvent(store, 'lab', 'reaction', reaction('a'), at).userId, 'a');
   const newCheckin = store.recordCheckIn('lab', 'b', at, pool.eligibleKinds(context));
   assert.equal(newCheckin.quests.some(q => q.kind === 'reaction'), false);
   assert.equal(pool.completeFromEvent(store, 'lab', 'reaction', reaction('b'), at), null);
+});
+
+test('Reaction chỉ gợi ý phòng cả thành viên và bot cùng nhìn thấy', () => {
+  const quest = nativePool();
+  const context = { channels: targets(), member: { denied: new Set() }, botMember: { denied: new Set() } };
+  assert.match(quest.instruction({kind:'reaction'}, context), /<#sample>/);
+  context.botMember.denied.add(Permissions.ViewChannel);
+  assert.ok(!quest.eligibleKinds(context).includes('reaction'));
+  assert.ok(!quest.eligibleKinds({...context, channels:new Map()}).includes('reaction'));
 });

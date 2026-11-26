@@ -8,15 +8,15 @@ const celebration = fileURLToPath(new URL('../assets/quest-celebration-temp.png'
 const forest = fileURLToPath(new URL('../assets/forest-poster-crop-temp.png', import.meta.url));
 const cache = new Map();
 const labels = {
-  voice: 'VÀO PHÒNG VOICE', reaction: 'THẢ EMOJI', community: 'GỬI TIN TRONG CHỦ ĐỀ', poll: 'BÌNH CHỌN',
+  voice: 'VÀO VOICE', reaction: 'THẢ EMOJI', community: 'GỬI TIN CHỦ ĐỀ', poll: 'BÌNH CHỌN',
   'dyno-roll': 'XÚC XẮC CÙNG DYNO',
-  'zodiac-likes': 'SỞ THÍCH CỦA MỘT CUNG',
+  'zodiac-likes': 'SỞ THÍCH THEO CUNG',
   'zodiac-compatibility': 'SO ĐỘ HỢP HAI CUNG',
   'zodiac-crystal': 'HỎI QUẢ CẦU PHA LÊ',
   'zodiac-coinflip': 'TUNG XU VỚI ZODIAC',
   'wheat-tarot': 'TAROT CÙNG WHEAT',
   'wheat-coinflip': 'TUNG XU VỚI WHEAT',
-  'asterie-astrology': 'XEM TỬ VI CÙNG ASTERIE',
+  'asterie-astrology': 'TỬ VI CÙNG ASTERIE',
   'asterie-astromeme': 'MEME CUNG HOÀNG ĐẠO',
 };
 
@@ -26,25 +26,38 @@ function escapeXml(value) {
   })[character]);
 }
 
-function layout(quests, voiceSeconds, compact) {
+function notificationLayout(quests, completedKind) {
+  const count = quests.filter(quest => quest.completed_at).length;
+  const title = count === 3 ? 'XONG CẢ BA VIỆC!' : 'XONG THÊM MỘT VIỆC!';
+  const label = labels[completedKind] ?? 'NHIỆM VỤ HÔM NAY';
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="460">
+    <rect x="38" y="42" width="636" height="376" rx="24" fill="#fff3ce" stroke="#965e26" stroke-width="12"/>
+    <g font-family="Be Vietnam Pro,Arial,sans-serif" font-weight="bold">
+      <text x="76" y="132" font-size="42" fill="#99441c">${title}</text>
+      <text x="72" y="267" font-size="120" fill="#365924">${count}/3</text>
+      <text x="76" y="357" font-size="36" fill="#365924">${escapeXml(label)}</text>
+    </g></svg>`;
+}
+
+function layout(quests, voiceSeconds) {
   const count = quests.filter(quest => quest.completed_at).length;
   const complete = count === 3;
-  const height = compact ? 460 : 740;
-  const title = complete ? 'XONG CẢ 3 VIỆC!' : compact ? 'TIẾN ĐỘ MỚI' : 'NHIỆM VỤ HÔM NAY';
-  const boardTop = compact ? 107 : 133;
-  const boardHeight = compact ? 325 : 551;
-  const rowTop = compact ? 250 : 363;
-  const rowGap = compact ? 53 : 83;
+  const height = 740;
+  const title = complete ? 'XONG CẢ 3 VIỆC!' : 'NHIỆM VỤ HÔM NAY';
+  const boardTop = 133;
+  const boardHeight = 551;
+  const rowTop = 363;
+  const rowGap = 83;
   const rows = quests.map((quest, index) => {
     const y = rowTop + index * rowGap;
     const done = Boolean(quest.completed_at);
     const detail = quest.kind === 'voice' ? voiceProgress(quest, voiceSeconds) : '';
     return `
-      <rect x="77" y="${y - 33}" width="570" height="${compact ? 46 : 66}" rx="${compact ? 23 : 33}" fill="#fff8e4" stroke="#d0a45c" stroke-width="3"/>
-      <circle cx="111" cy="${y - (compact ? 10 : 1)}" r="${compact ? 16 : 23}" fill="${done ? '#456627' : '#fff8e4'}" stroke="#6c7848" stroke-width="3"/>
-      ${done ? `<path d="M102 ${y - (compact ? 10 : 1)} l7 7 l13 -16" fill="none" stroke="#fff8e4" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
-      <text x="146" y="${y + (compact ? -2 : 8)}" class="quest">${escapeXml(labels[quest.kind] ?? 'NHIỆM VỤ')}</text>
-      ${detail ? `<text x="624" y="${y + (compact ? -2 : 8)}" text-anchor="end" class="detail">${escapeXml(detail)}</text>` : ''}`;
+      <rect x="77" y="${y - 33}" width="570" height="66" rx="33" fill="#fff8e4" stroke="#d0a45c" stroke-width="3"/>
+      <circle cx="111" cy="${y - 1}" r="23" fill="${done ? '#456627' : '#fff8e4'}" stroke="#6c7848" stroke-width="3"/>
+      ${done ? `<path d="M102 ${y - 1} l7 7 l13 -16" fill="none" stroke="#fff8e4" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
+      <text x="146" y="${y + 8}" class="quest">${escapeXml(labels[quest.kind] ?? 'NHIỆM VỤ')}</text>
+      ${detail ? `<text x="624" y="${y + 8}" text-anchor="end" class="detail">${escapeXml(detail)}</text>` : ''}`;
   }).join('');
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="${height}" viewBox="0 0 1000 ${height}">
   <defs>
@@ -53,30 +66,30 @@ function layout(quests, voiceSeconds, compact) {
   </defs>
   <style>
     text{font-family:'Be Vietnam Pro','Arial',sans-serif}
-    .title{font-size:${compact ? 43 : 52}px;font-weight:900;fill:#dd2c10;stroke:#fff8e8;stroke-width:10;paint-order:stroke;stroke-linejoin:round}
-    .count{font-size:${compact ? 34 : 44}px;font-weight:900;fill:#dc2c14}
-    .small{font-size:${compact ? 19 : 23}px;font-weight:800;fill:#456627}
-    .quest{font-size:${compact ? 23 : 28}px;font-weight:900;fill:#385b24}
-    .detail{font-size:${compact ? 22 : 27}px;font-weight:800;fill:#765024}
+    .title{font-size:52px;font-weight:900;fill:#dd2c10;stroke:#fff8e8;stroke-width:10;paint-order:stroke;stroke-linejoin:round}
+    .count{font-size:44px;font-weight:900;fill:#dc2c14}
+    .small{font-size:23px;font-weight:800;fill:#456627}
+    .quest{font-size:36px;font-weight:900;fill:#385b24}
+    .detail{font-size:27px;font-weight:800;fill:#765024}
   </style>
   <rect width="1000" height="${height}" fill="#163c12" opacity=".12"/>
-  <text x="62" y="${compact ? 72 : 87}" class="title">${title}</text>
+  <text x="62" y="87" class="title">${title}</text>
   <rect x="42" y="${boardTop}" width="648" height="${boardHeight}" rx="20" fill="#593313" opacity=".35" transform="translate(8 10)"/>
   <rect x="42" y="${boardTop}" width="648" height="${boardHeight}" rx="20" fill="url(#wood)" stroke="#734112" stroke-width="7"/>
   <rect x="60" y="${boardTop + 17}" width="612" height="${boardHeight - 34}" rx="12" fill="url(#paper)" stroke="#e0be79" stroke-width="4"/>
   <circle cx="54" cy="${boardTop + 12}" r="5" fill="#e4bc74"/><circle cx="678" cy="${boardTop + 12}" r="5" fill="#e4bc74"/>
   <circle cx="54" cy="${boardTop + boardHeight - 12}" r="5" fill="#e4bc74"/><circle cx="678" cy="${boardTop + boardHeight - 12}" r="5" fill="#e4bc74"/>
-  <text x="82" y="${compact ? 159 : 207}" class="small">ĐÃ HOÀN THÀNH</text>
-  <text x="82" y="${compact ? 203 : 267}" class="count">${count}/3</text>
-  <rect x="180" y="${compact ? 177 : 237}" width="420" height="${compact ? 18 : 23}" rx="12" fill="#e6d3a7" stroke="#c59a57" stroke-width="2"/>
-  <rect x="183" y="${compact ? 180 : 240}" width="${414 * count / 3}" height="${compact ? 12 : 17}" rx="8" fill="#456627"/>
+  <text x="82" y="207" class="small">ĐÃ HOÀN THÀNH</text>
+  <text x="82" y="267" class="count">${count}/3</text>
+  <rect x="180" y="237" width="420" height="23" rx="12" fill="#e6d3a7" stroke="#c59a57" stroke-width="2"/>
+  <rect x="183" y="240" width="${414 * count / 3}" height="17" rx="8" fill="#456627"/>
   ${rows}
-  ${complete && !compact ? '<text x="82" y="640" class="small">MAI GHÉ Ổ WỦY TIẾP NHA!</text>' : ''}
+  ${complete ? '<text x="82" y="640" class="small">MAI GHÉ Ổ WỦY TIẾP NHA!</text>' : ''}
   </svg>`;
 }
 
-export async function renderQuestCard(quests, voiceSeconds, { compact = false } = {}) {
-  const key = JSON.stringify([compact, voiceSeconds, quests.map(({ kind, completed_at, voice_ms }) =>
+export async function renderQuestCard(quests, voiceSeconds, { compact = false, completedKind } = {}) {
+  const key = JSON.stringify([compact, completedKind, voiceSeconds, quests.map(({ kind, completed_at, voice_ms }) =>
     [kind, Boolean(completed_at), Math.floor((voice_ms ?? 0) / 1000)])]);
   if (cache.has(key)) return cache.get(key);
   // Keep text replies available if the host cannot load Sharp's native binary.
@@ -90,7 +103,7 @@ export async function renderQuestCard(quests, voiceSeconds, { compact = false } 
   const metadata = await sharp(mascot).metadata();
   const image = await sharp(backdrop)
     .composite([
-      { input: Buffer.from(layout(quests, voiceSeconds, compact)) },
+      { input: Buffer.from(compact ? notificationLayout(quests, completedKind) : layout(quests, voiceSeconds)) },
       { input: mascot, left: Math.round(820 - metadata.width / 2),
         top: Math.round((compact ? 270 : 442) - metadata.height / 2) },
     ])

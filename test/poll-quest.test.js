@@ -12,7 +12,7 @@ const message = '100000000000000003';
 const a = '100000000000000004';
 const b = '100000000000000005';
 const url = `https://discord.com/channels/${guild}/${channel}/${message}`;
-const cutoff = '2026-11-26T23:59:00+07:00';
+const cutoff = '2026-11-27T00:00:00+07:00';
 const target = readPollTarget(guild, url, cutoff, 'voice,reaction,poll');
 const checkIn = new Date('2026-11-26T04:00:00Z');
 const after = new Date('2026-11-26T04:01:00Z');
@@ -33,6 +33,7 @@ test('Poll nằm ngoài danh sách mặc định và chỉ giao trước hạn, 
   assert.deepEqual(createQuestPool(definitions).eligibleKinds(context), otherKinds);
   const enabled = createQuestPool(definitions, 'voice,reaction,community,poll');
   assert.ok(enabled.eligibleKinds(context).includes('poll'));
+  assert.equal(createPollQuest(target, '05:30').eligible(context), false);
   assert.match(enabled.instruction({ kind: 'poll' }, context), new RegExp(`<${url}>`));
   assert.ok(!enabled.eligibleKinds({ ...context, member: undefined }).includes('poll'));
   assert.ok(!enabled.eligibleKinds({ ...context, at: new Date(cutoff) }).includes('poll'));

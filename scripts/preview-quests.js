@@ -14,6 +14,6 @@ for (let done = 0; done <= kinds.length; done++) {
   }));
   await writeFile(new URL('quest-' + done + '-of-3.png', output), await renderQuestCard(quests, voiceSeconds));
   if (done === 2) {
-    await writeFile(new URL('quest-dm-preview.png', output), await renderQuestCard(quests, voiceSeconds, { compact: true }));
+    await writeFile(new URL('quest-dm-preview.png', output), await renderQuestCard(quests, voiceSeconds, { compact: true, completedKind: kinds[done - 1] }));
   }
 }

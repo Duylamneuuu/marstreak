@@ -39,9 +39,11 @@ test('bảng nhiệm vụ có đường đi, trạng thái và nút cập nhật
   const config = { guildId: 'lab', voiceIds: ['voice'], wheatTarotChannel: 'tarot', voiceSeconds: 120 };
   const pool = createQuestPool([...createNativeQuests(config), ...createLabCommandQuests(config)]);
   const options = { pool, voiceSeconds: 120, resetTime: '05:30', checkInCommand: '</checkin:123>' };
-  const empty = await makeQuestBoard([], options);
+  const empty = await makeQuestBoard(null, options);
   assert.match(empty.content, /<\/checkin:123>/);
   assert.deepEqual(empty.components, []);
+  const pending = await makeQuestBoard([], options);
+  assert.match(pending.content, /Đã điểm danh/);
   const quests = [{ kind: 'voice', voice_ms: 18000 }, { kind: 'wheat-tarot' }, { kind: 'reaction' }];
   const openings = [/Wủy tự đánh dấu/, /Còn hai việc/, /Còn một việc/, /Xong cả ba việc/];
   for (let done = 0; done <= quests.length; done++) {
