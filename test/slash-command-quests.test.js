@@ -5,6 +5,7 @@ import { openCheckInStore } from '../src/checkins.js';
 import { createZodiacLikesQuest } from '../src/integrations/zodiac-likes.js';
 import { createWheatTarotQuest } from '../src/integrations/wheat-tarot.js';
 import { createLabCommandQuests } from '../src/integrations/lab-command-quests.js';
+import { createMarWuyRankQuest } from '../src/integrations/marwuy-rank.js';
 import { createQuestPool } from '../src/quest-pool.js';
 
 const zodiacId = '950251264095162418';
@@ -122,4 +123,41 @@ test('Wheat accepts /tarot from its app without needing spread and rejects the s
   assert.equal(wheat.verify(packet, observedAt).userId, userA);
   assert.equal(wheat.verify(sameNameFromOtherApp, observedAt), null);
   assert.equal(quest.verify(packet, observedAt), null);
+});
+
+const rankSource = {
+  guildId: '100000000000000011', channelId: '100000000000000012',
+  appId: '100000000000000013', authorId: '100000000000000014',
+};
+
+test('Mar Wuỷ Rank stays unregistered and requires a verified source and a result reader', () => {
+  const dormant = createMarWuyRankQuest(rankSource);
+  assert.equal(dormant.defaultEnabled, false);
+  assert.equal(dormant.eligible({}), false);
+  assert.equal(dormant.verify(invocation(userA, 'rank'), observedAt), null);
+  assert.equal(createLabCommandQuests(config).some(q => q.kind === dormant.kind), false);
+  assert.throws(() => createMarWuyRankQuest({ ...rankSource, appId: undefined }), /verified/);
+});
+
+test('Rank requires a public result for the caller and rejects loading, wrong bot and other targets', () => {
+  const packet = invocation(userA, 'rank');
+  Object.assign(packet.d, {
+    guild_id: rankSource.guildId, channel_id: rankSource.channelId,
+    application_id: rankSource.appId, webhook_id: rankSource.appId,
+    author: { id: rankSource.authorId, bot: true }, flags: 0,
+  });
+  // Stub the future result reader. No assumptions about Mar Wuỷ's payload.
+  const rank = createMarWuyRankQuest(rankSource, () => userA);
+  assert.equal(rank.verify(packet, observedAt)?.userId, userA);
+  for (const owner of [null, userB]) {
+    assert.equal(createMarWuyRankQuest(rankSource, () => owner).verify(packet, observedAt), null);
+  }
+  for (const change of [
+    { flags: MessageFlags.Loading }, { flags: MessageFlags.Ephemeral },
+    { application_id: zodiacId }, { author: { id: zodiacId, bot: true } },
+    { interaction_metadata: { ...packet.d.interaction_metadata, name: 'other' } },
+    { channel_id: 'another-channel' },
+  ]) {
+    assert.equal(rank.verify({ ...packet, d: { ...packet.d, ...change } }, observedAt), null);
+  }
 });
