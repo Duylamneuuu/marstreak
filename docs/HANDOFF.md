@@ -1,36 +1,26 @@
-# Bàn giao MarStreak · DC1
+# Bàn giao MarStreak · 26/11/2026
 
-Bản 26/11/2026. Phần sản phẩm đã có bản Lab để nghiệm thu. Người vận hành cấu hình Discord Application và server họ có quyền quản lý.
+Chị Cún có thể duyệt bản Lab ngay trên GitHub. Thành viên gõ `/checkin` để giữ chuỗi và nhận ba việc trong ngày. Mở `/quests` để xem còn việc gì và cần làm ở đâu.
 
-## Trong buổi trình
+## Xem trong 5 phút
 
-1. Mở [demo và ảnh 0/3 đến 3/3](demo/README.md). Nếu có bot đang chạy, cho người xem điểm danh, chọn một việc theo thẻ rồi bấm **Xem tiến độ mới**.
-2. Cho xem một DM khi hoàn thành và thẻ chuỗi ngày. Trong Lab, hai nick từng đạt 3/3 độc lập. Hai lệnh trùng tên như `/coinflip` của Wheat và Zodiac được chấm theo đúng app.
-3. Chốt duyệt Lab, nhiệm vụ và luật cho đợt đầu, hình ảnh, người vận hành và nơi chạy. Voice 120 giây và giờ làm mới 00:00 giờ Việt Nam là thông số Lab. Poll, gửi tin trong chủ đề và Reaction chỉ định có thể bật khi team có hoạt động phù hợp.
+1. Mở [bộ ảnh demo](demo/README.md). Thẻ 0/3 là lúc vừa điểm danh. Thẻ 3/3 và tin nhắn riêng cho thấy thành viên sẽ nhận được gì khi làm xong.
+2. Đọc [kết quả thử thật trên hai tài khoản](QA-2026-11-26.md). Cả hai đạt 3/3 độc lập. Sau khi bot khởi động lại, hai người vẫn thấy đúng bộ nhiệm vụ của mình. Bộ test tự động đạt **41/41**.
+3. Nếu muốn tự chơi, nhờ người vận hành mở bot Lab. Trong Discord, chọn `/checkin` của **MarWuy DC1 Test**, làm theo một dòng trên thẻ rồi bấm **Xem tiến độ mới**.
 
-## Tình trạng kiểm thử
+## Chị cần quyết định gì?
 
-| Hạng mục | Tình trạng |
+| Việc cần chốt | Bản đang có để chị xem |
 | --- | --- |
-| Điểm danh, giữ chuỗi, ba quest | Thử thật trong Lab, gồm giữ tiến độ sau restart và hai nick độc lập. |
-| Voice, Reaction, Community và lệnh bot ngoài | Đã ghi nhận từ sự kiện Discord thật. Bộ mở rộng Lab có Voice, Reaction và chín lệnh. Community có thể bật lại. |
-| Poll | Lab thử trên SQLite riêng. Bấm **Vote** lên 1/3, đổi phiếu giữ 1/3. |
-| Giọng và giao diện | Thẻ riêng 0/3 đến 3/3 và DM đã thử trên Discord Web. Ảnh trên iOS/Android, VPS thực tế, tải đồng thời và độ ổn định dài ngày cần xác nhận ở môi trường nhận bàn giao. |
-| Regression | Bộ test trong repo bao phủ các hành vi trên, backup/restore, sai nguồn và chống ghi nhận trùng. |
+| Mở những nhiệm vụ nào đợt đầu? | Voice, thả emoji và các lệnh bot ngoài đã thử trong Lab. Có thể bật gửi tin trong chủ đề hoặc bình chọn khi team có chủ đề hoặc bài bình chọn đang mở. [Danh sách và cách bật](FEATURES.md) |
+| Tính thế nào là xong? | Voice đang thử ở mức 2 phút, ngày mới bắt đầu lúc 00:00 giờ Việt Nam. Với Gaming, có thể chọn một lệnh cụ thể như `/roll` của Dyno. MarStreak ghi nhận thành viên đã gọi `/tarot` của Wheat. Số lá thành viên chọn vẫn chưa xác minh được. |
+| Có cần Rank ngay khi mở? | Lệnh xem hạng là `/rank` của **Mar Wuỷ**. Lần thử mới nhất app chưa trả thẻ. Rank đang tắt. Nếu bắt buộc ở đợt đầu, cần người quản lý app khôi phục lệnh và thử lại với thành viên. |
+| Duyệt hình và chọn người trực bot | Hai mascot lấy từ poster đang dùng làm ảnh tạm. Chị có thể duyệt cho đợt đầu hoặc giao Design thay asset. Cần chỉ định người giữ cấu hình, máy chạy và bản sao lưu. |
 
-## Lộ trình đọc cho người vận hành hoặc AI
+## Giao cho người vận hành
 
-| Muốn hiểu | Đọc |
-| --- | --- |
-| Luồng người dùng | [README](../README.md), [thẻ điểm danh](../src/checkin-reply.js), [thẻ nhiệm vụ và DM](../src/quest-reply.js) |
-| Cách chọn và chấm quest | [Bảng tính năng](FEATURES.md), [bộ chọn quest](../src/quest-pool.js), [quest Discord](../src/native-quests.js), [Poll](../src/poll-quest.js), [lệnh bot ngoài](../src/integrations/lab-command-quests.js) |
-| Dữ liệu và giờ làm mới | [SQLite](../src/checkins.js), [đếm Voice](../src/voice-quests.js), [kiểm thử](../test/) |
-| Cài đặt và vận hành | [Cài VPS](VPS.md), [unit systemd](../deploy/marstreak.service), [mẫu cấu hình](../.env.example) |
+- **Chạy lần đầu.** Làm theo [hướng dẫn cài trên server thử](../README.md#chạy-thử-trong-server-discord-riêng). Mẫu mặc định dùng Voice, emoji và một chủ đề đang mở. Có thể thử đủ 3/3 với một app MarStreak.
+- **Chạy lâu dài.** Dùng [hướng dẫn VPS, sao lưu và khôi phục](VPS.md). Sau khi chị duyệt danh sách nhiệm vụ, thử lại bằng quyền thành viên ở môi trường đích trước khi mở rộng.
+- **Nghiệm thu vận hành.** Ghi số liệu Voice/Game trước khi mở để có mốc so sánh. Trong tuần beta, theo dõi số người điểm danh mỗi ngày. Người phụ trách VPS theo dõi uptime với mục tiêu trên 99%. Đây là các số liệu cần đo khi chạy thật.
 
-Quest lệnh bot ngoài tính lượt gọi đúng có xác nhận công khai. Nếu Lead yêu cầu Wheat **trải đúng một lá**, cần nguồn xác nhận số lá. Các hạng mục xem Rank, Wordle, tự tạo Poll, XP, xu và role cần quyết định riêng trước khi triển khai.
-
-Lead có thể xem demo và phân công. Người vận hành dùng quyền và thông tin được cấp, kiểm tra một lượt trên server thử trước khi chạy cho thành viên.
-
-## Cập nhật sau khi sửa ngày 26/11
-
-Hai bản source đạt 39/39 test. Thành viên giữ streak khi thiếu quest và có thể nhận bộ ba sau đó bằng `/quests`. Bot xếp thứ tự gửi DM theo từng người, gợi ý kênh Reaction cả thành viên và bot cùng thấy, kiểm tra sự hiện diện của bot nguồn khi khởi động và chỉ giao Poll còn mở tới kỳ reset. Bảng quest có chữ lớn hơn. DM có số tiến độ và tên việc vừa xong. Đã kiểm tra ảnh thu nhỏ 320 px và khởi động bản sửa qua Gateway Lab bằng SQLite QA riêng. Tối 26/11, cả hai nick đi từ 0/3 đến 3/3 trên bản sửa và giữ nguyên dữ liệu sau restart. [Bảng kết quả, mốc giờ và tình trạng Rank](QA-2026-11-26.md). Quyền dùng từng lệnh theo role, việc đóng Poll thủ công sớm và kiểm thử VPS vẫn cần Ops xác nhận.
+Quyền lệnh theo role, trải nghiệm trên điện thoại thật và độ ổn định dài ngày còn cần kiểm tra ở môi trường vận hành. [Tính năng và cách cấu hình](FEATURES.md) · [Cấu trúc SQLite](../src/checkins.js) · [Bộ kiểm thử](../test/)

@@ -50,3 +50,12 @@ LAB_QUEST_POOL=voice,reaction,wheat-tarot,wheat-coinflip,zodiac-likes,zodiac-com
 Khi có nhiều bot cùng lệnh như `/coinflip`, chọn đúng tên app ở bên phải trong menu Discord. Nếu muốn thử nhóm cố định, dùng đúng ba mã và một file SQLite riêng.
 
 Khi bật Poll, chọn bài còn mở tới ít nhất kỳ làm mới tiếp theo. Giữ bài đang mở đến hạn. Khi bật quest bot ngoài, kiểm tra lệnh bằng role thành viên thường. MarStreak kiểm tra bot nguồn khi khởi động và quyền nhìn thấy kênh khi giao việc. Sau khi mời lại app hoặc khôi phục quyền truy cập bot nguồn, khởi động lại và thử lệnh trước khi mở cho thành viên.
+
+## Bot lưu gì trong SQLite?
+
+| Bảng | Dữ liệu của một thành viên trong một server |
+| --- | --- |
+| `checkins` | Mỗi ngày có tối đa một dòng. Bot tính chuỗi từ các ngày điểm danh liên tiếp. |
+| `daily_quests` | Mỗi loại nhiệm vụ được giao có một dòng cho ngày đó. `assigned_at` ghi lúc giao, `completed_at` ghi lúc xong và `voice_ms` lưu thời lượng Voice đã tính cho nhiệm vụ. |
+
+Để tạm ngừng một việc, bỏ mã khỏi `LAB_QUEST_POOL` và giữ cấu hình đích đến hết ngày để thành viên làm nốt. Giữ lịch sử trong hai bảng. Khi viết một loại nhiệm vụ mới, đăng ký mã riêng cùng cách kiểm tra quyền, lời hướng dẫn và sự kiện chứng minh hoàn thành. Thử cả đúng người, sai người và sự kiện lặp trong Lab trước khi thêm mã vào danh sách giao. [Cấu trúc dữ liệu](../src/checkins.js) · [Cách đăng ký lệnh bot ngoài](../src/integrations/lab-command-quests.js) · [Test chấm nhiệm vụ](../test/slash-command-quests.test.js)
