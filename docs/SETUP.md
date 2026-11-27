@@ -95,7 +95,7 @@ Chờ dòng **MarStreak sẵn sàng. Đã kiểm tra ID/quyền và đăng ký /
 
 1. Trong Discord, gõ `/checkin` và chọn lệnh của đúng ứng dụng MarStreak vừa cài. Với tài khoản và database mới, bot gửi thẻ điểm danh **streak 1**, rồi bảng **0/3** ngay bên dưới. Hai phản hồi chỉ người gọi thấy.
 2. Sau khi nhận bảng, vào phòng Voice được chỉ ra đủ hai phút, thả một emoji mới vào tin trong kênh bot nhìn thấy, rồi gửi một tin trong thread được dẫn. Làm theo thứ tự bất kỳ. Bộ mẫu không bắt buộc một emoji cụ thể.
-3. Bấm **Xem tiến độ mới** hoặc gọi `/quests` để thấy từng nhiệm vụ được đánh dấu đến **3/3**. Bảng đã mở không tự cập nhật. DM có thể báo tiến độ nếu thành viên cho phép nhận tin riêng.
+3. Bấm **Xem tiến độ mới** hoặc gọi `/quests` để thấy từng nhiệm vụ được đánh dấu đến **3/3**. Bảng đã mở không tự cập nhật. Mặc định bot giữ im lặng khi ghi nhận quest. Để gửi một tin riêng khi đạt **3/3**, đặt `QUEST_COMPLETION_DM=true` rồi khởi động lại bot.
 4. Bấm **Cách làm nhiệm vụ** để mở hướng dẫn riêng ngay trong Discord. Nút này chỉ giải thích cách làm; kiểm tra rằng bấm nút không thay đổi điểm danh hoặc tiến độ.
 
 Điểm danh giữ chuỗi ngày. Tiến độ bắt đầu ở 0/3 và tăng khi hoàn thành từng nhiệm vụ. Nếu lúc điểm danh chưa đủ ba việc khả dụng, dùng `/quests` sau khi đủ điều kiện để nhận bộ đầu tiên trong ngày. Nút **Xem tiến độ mới** dùng cùng cơ chế. Cả hai đều yêu cầu đã điểm danh. Lượt thả emoji hoặc gửi tin trước khi nhận bộ không được tính; emoji còn từ hôm trước cần gỡ rồi thả mới sau khi nhận bộ hôm nay. [Hướng dẫn có thể ghim cho thành viên](MEMBER-GUIDE.md)
@@ -110,7 +110,7 @@ Chỉ chạy một tiến trình cho mỗi ứng dụng và tệp SQLite. Dừng
 | --- | --- |
 | Gọi `/checkin`, rồi gọi lại trong cùng ngày | Một lượt điểm danh; giữ cùng bộ ba và chuỗi. |
 | Làm lần lượt ba nhiệm vụ, mở `/quests` sau mỗi việc | Tiến độ tăng tới 3/3, không cần nộp ảnh hoặc xác nhận bằng tay. |
-| Làm lại việc đã hoàn thành | Không cộng quá một lần và không gửi thêm DM cho việc đó. |
+| Làm lại việc đã hoàn thành | Tiến độ giữ nguyên. Nếu đã bật DM khi đạt 3/3, bot gửi một tin ở lần hoàn thành cuối cùng. |
 | Dùng tài khoản thứ hai với role thành viên thường | Tài khoản thứ hai nhận tiến độ riêng; không lấy tiến độ của tài khoản đầu. |
 | Dừng, chạy lại cùng `.env` và SQLite, mở `/quests` | Giữ nguyên bộ, thứ tự và tiến độ trong ngày. |
 | Sang ngày mới, gọi `/checkin` | Giao bộ của ngày mới; chuỗi tăng nếu đã điểm danh ngày liền trước. |
@@ -139,6 +139,7 @@ Chờ dòng **Backup SQLite hợp lệ** và giữ tệp ở đường dẫn đ�
 | Báo kiểm tra kênh/quyền, hoặc thread phải mở | Đối chiếu biến được ghi trong lỗi: đúng server, loại kênh và quyền của bot. Mở lại thread nếu đã đóng; kiểm tra quyền ghi đè của danh mục. |
 | Bot sẵn sàng nhưng không thấy lệnh | Kiểm tra app đã cài đúng server, scope `applications.commands`, role có Use Application Commands và đang chọn đúng bot trong menu. |
 | Điểm danh được nhưng chưa giao đủ ba việc | Kiểm tra role thành viên có đủ quyền ở cả ba đích trong bước 3. Sau khi sửa quyền, dùng `/quests` trong cùng ngày để thử nhận bộ. |
-| Làm rồi chưa có dấu tick, hoặc không nhận DM | Mở lại `/quests`; kiểm tra việc được giao, đích và thời điểm thực hiện. Với Voice, xem thời lượng đã tính. Chặn DM không làm mất tiến độ. |
+| Làm rồi chưa có dấu tick | Mở lại `/quests` và kiểm tra việc được giao, đích, thời điểm thực hiện. Với Voice, xem thời lượng đã tính. |
+| Đạt 3/3 mà chưa nhận DM | Kiểm tra `QUEST_COMPLETION_DM=true` và quyền nhận tin riêng trên Discord. Tiến độ đã ghi vẫn xem được qua `/quests`. |
 | Bot offline sau khi đóng máy hoặc terminal | Mở lại một tiến trình bot. Khi cần chạy liên tục, triển khai theo [VPS](VPS.md). |
 

@@ -3,7 +3,7 @@ import { ChannelType } from 'discord.js';
 import { test } from 'node:test';
 import { openCheckInStore } from '../src/checkins.js';
 import { createQuestBotReader, createReactionTargetReader, verifyTargets } from '../src/lab-targets.js';
-import { deliverQuestUpdate } from '../src/quest-notification.js';
+import { createQuestCompletionNotifier, deliverQuestUpdate } from '../src/quest-notification.js';
 import { trackVoice } from '../src/voice-quests.js';
 
 const cfg = {
@@ -60,6 +60,33 @@ test('DM bị Discord từ chối hoặc timeout không thay đổi quest đã g
   assert.equal(errors[1].name, 'TimeoutError');
   assert.equal(store.getQuests('lab', 'user', day).find(q => q.kind === 'reaction').completed_at, when.toISOString());
   assert.equal(store.completeQuest('lab', 'user', day, 'reaction', when), false);
+});
+
+test('quest DM is off by default and sends once at 3/3 when enabled', async t => {
+  const store = openCheckInStore(':memory:');
+  t.after(() => store.close());
+  const when = new Date('2026-11-21T04:00:00Z');
+  const day = store.currentDay(when);
+  const kinds = ['reaction', 'community', 'voice'];
+  const sent = [];
+  for (const [user, enabled] of [['quiet', false], ['notified', true]]) {
+    store.recordCheckIn('lab', user, when, kinds);
+    const notify = createQuestCompletionNotifier({
+      enabled,
+      getQuests: (userId, date) => store.getQuests('lab', userId, date),
+      send: (userId, kind, quests) => sent.push([userId, kind, quests.length]),
+    });
+    for (const kind of kinds.slice(0, 2)) {
+      assert.equal(store.completeQuest('lab', user, day, kind, when), true);
+      await notify(user, kind, day);
+      assert.deepEqual(sent, []);
+    }
+    for (let attempt = 0; attempt < 2; attempt++) {
+      if (store.completeQuest('lab', user, day, 'voice', when)) await notify(user, 'voice', day);
+    }
+    assert.equal(store.getQuests('lab', user, day).filter(quest => quest.completed_at).length, 3);
+  }
+  assert.deepEqual(sent, [['notified', 'voice', 3]]);
 });
 
 test('DM đợi lượt trước, lỗi gửi không chặn lượt sau hay người khác', async () => {

@@ -17,6 +17,13 @@ test('external-only pool needs no Voice and retains valid config for disabled qu
   assert.equal(config.asterieChannel, room);
 });
 
+test('quest DMs default to off and require an explicit true value', () => {
+  assert.equal(readConfig(env).completionDm, false);
+  assert.equal(readConfig({ ...env, QUEST_COMPLETION_DM: 'false' }).completionDm, false);
+  assert.equal(readConfig({ ...env, QUEST_COMPLETION_DM: 'true' }).completionDm, true);
+  assert.throws(() => readConfig({ ...env, QUEST_COMPLETION_DM: 'yes' }), /QUEST_COMPLETION_DM/);
+});
+
 test('missing enabled destination fails with its env key and disabled bad settings are ignored', () => {
   assert.throws(() => readConfig({ ...env, LAB_DYNO_ROLL_CHANNEL_ID: '' }), /LAB_DYNO_ROLL_CHANNEL_ID/);
   assert.throws(() => readConfig({ ...env, LAB_QUEST_POOL: 'wheat-tarot,wheat-coinflip,voice' }), /LAB_VOICE_CHANNEL_IDS/);

@@ -13,7 +13,7 @@ for (let done = 0; done <= kinds.length; done++) {
     voice_ms: kind === 'voice' ? (done === 3 ? voiceSeconds * 1000 : done * 17000) : 0,
   }));
   await writeFile(new URL('quest-' + done + '-of-3.png', output), await renderQuestCard(quests, voiceSeconds));
-  if (done === 2) {
+  if (done === kinds.length) {
     await writeFile(new URL('quest-dm-preview.png', output), await renderQuestCard(quests, voiceSeconds, { compact: true, completedKind: kinds[done - 1] }));
   }
 }

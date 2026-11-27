@@ -4,7 +4,7 @@ import {
 } from 'discord.js';
 import { readConfig } from './config.js';
 import { createQuestBotReader, createReactionTargetReader, verifyTargets } from './lab-targets.js';
-import { createNotificationQueue, deliverQuestUpdate } from './quest-notification.js';
+import { createQuestCompletionNotifier, deliverQuestUpdate } from './quest-notification.js';
 import { createDailyInteractionHandler } from './daily-interaction.js';
 import { makeQuestUpdate } from './quest-reply.js';
 import { openCheckInStore } from './checkins.js';
@@ -50,16 +50,16 @@ async function start(config) {
   let voiceTimer;
   let disconnectedAt;
 
-  const enqueue = createNotificationQueue();
-  function notify(userId, kind, day) {
-    const progress = store.getQuests(config.guildId, userId, day);
-    return enqueue(userId, async () => {
+  const notify = createQuestCompletionNotifier({
+    enabled: config.completionDm,
+    getQuests: (userId, day) => store.getQuests(config.guildId, userId, day),
+    send: async (userId, kind, progress) => {
       const visual = await makeQuestUpdate(progress, kind, { pool, voiceSeconds: config.voiceSeconds });
       await deliverQuestUpdate(client.users, userId, visual, error => {
         console.log('Không gửi được DM (' + errorLabel(error) + '). Xem /quests để kiểm tra tiến độ.');
       });
-    });
-  }
+    },
+  });
 
   const voice = trackVoice(store, config.guildId, (userId, day) => {
     void notify(userId, 'voice', day).catch(error => console.error('Lỗi thông báo Voice (' + errorLabel(error) + ').'));

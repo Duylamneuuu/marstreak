@@ -12,11 +12,15 @@ export function readConfig(env = process.env, warn = console.warn) {
   const appId = env.DISCORD_APPLICATION_ID?.trim();
   const guildId = env.DISCORD_GUILD_ID?.trim();
   const resetTime = env.CHECKIN_RESET_TIME ?? '00:00';
+  const completionDm = env.QUEST_COMPLETION_DM?.trim().toLowerCase() || 'false';
   const questKinds = env.LAB_QUEST_POOL;
   const enabled = enabledQuestKinds(questKinds);
   if (!token) throw new Error('Điền DISCORD_TOKEN trong .env.');
   if (!snowflake.test(appId ?? '')) throw new Error('DISCORD_APPLICATION_ID không hợp lệ.');
   if (!snowflake.test(guildId ?? '')) throw new Error('DISCORD_GUILD_ID không hợp lệ.');
+  if (completionDm !== 'true' && completionDm !== 'false') {
+    throw new Error('QUEST_COMPLETION_DM cần là true hoặc false.');
+  }
   parseResetTime(resetTime);
 
   function id(key) {
@@ -63,6 +67,7 @@ export function readConfig(env = process.env, warn = console.warn) {
 
   return {
     token, appId, guildId, resetTime, questKinds, ...voice, ...reaction,
+    completionDm: completionDm === 'true',
     databasePath: resolve(env.CHECKIN_DB_PATH || 'data/checkins.sqlite'),
     threadId: questSetting(['community'], required =>
       required || env.LAB_COMMUNITY_THREAD_ID?.trim() ? id('LAB_COMMUNITY_THREAD_ID') : undefined),

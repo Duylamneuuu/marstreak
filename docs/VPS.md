@@ -88,7 +88,7 @@ sudo -u marstreak /opt/marstreak-node/bin/node --env-file=/etc/marstreak/marstre
 | Thiếu lệnh | Kiểm tra app đã cài vào đúng guild, scope `applications.commands` và quyền thành viên. |
 | Không nhận ba quest | Kiểm tra ít nhất ba mã đã khai báo, đúng ID đích và thành viên làm được. |
 | Quest không tăng | Điểm danh trước, chọn đúng app và kênh. Với Poll, bấm **Vote** trong đúng bài còn mở. Với Voice, xem thời gian đã tính và phòng trên thẻ. |
-| Không nhận DM | Mở `/quests` để xem kết quả đã ghi, kiểm tra cài đặt nhận tin riêng. |
+| Không nhận DM khi đạt 3/3 | Mở `/quests` để xem kết quả đã ghi. Để gửi DM, đặt `QUEST_COMPLETION_DM=true` trong cấu hình VPS, khởi động lại dịch vụ và kiểm tra quyền nhận tin riêng. |
 | Thẻ thiếu ảnh | Kiểm tra các PNG trong `assets/` và dependency Sharp. Hướng dẫn dạng chữ vẫn hiện trong embed. |
 
 Trước khi mở cho thành viên, kiểm tra dịch vụ trên VPS đích, thử khôi phục một bản sao và xác nhận quyền theo role. Ghi lại SHA, thời điểm triển khai và người phụ trách.

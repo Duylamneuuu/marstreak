@@ -8,7 +8,7 @@
 | **Còn một việc** | **Hoàn thành cả ba** |
 | ![Bảng 2/3](quest-2-of-3.png) | ![Bảng 3/3](quest-3-of-3.png) |
 
-Khi Discord cho phép nhận tin riêng, bot gửi cập nhật sau mỗi nhiệm vụ hoàn thành. [Ảnh tin nhắn riêng](quest-dm-preview.png)
+Mặc định thành viên xem tiến độ bằng `/quests` hoặc **Xem tiến độ mới**. Server có thể bật một tin riêng khi thành viên đạt 3/3. [Ảnh tin nhắn riêng](quest-dm-preview.png)
 
 Các ảnh minh họa dùng dữ liệu mẫu. Nhân vật tai dài và nhân vật đầu tròn tạm lấy từ poster “Người thầy có thể đến từ nhiều nơi”, có chỉnh lại nét nhân vật bằng AI. Nền rừng cắt từ poster “Điều ở lại không chỉ là kiến thức” (vùng 270 × 500 px tại x=810, y=0). Cả hai poster thuộc bộ tham chiếu Lab ngày 21/11. Nội dung, thanh tiến độ và biểu tượng hoàn thành được dựng bằng code. [Tài sản](../../assets/) · [Bộ dựng ảnh](../../src/quest-visual.js)
 

@@ -54,4 +54,4 @@ Chỉ làm những loại xuất hiện trên bảng của bạn. Với lệnh b
 - Kiểm tra việc đó có trong **bộ hôm nay**, bạn đã nhận bộ trước khi làm, và đã chọn đúng kênh, tin nhắn, emoji hoặc bot. Nhiều bot có cùng lệnh `/coinflip`.
 - Với Voice, xem thời lượng **Đã tính** trên bảng; thời gian bot mất kết nối không được cộng.
 - Nếu bot báo đang chờ đủ ba việc, lượt điểm danh vẫn được giữ. Mở lại `/quests` trong ngày để nhận bộ đầu tiên khi đủ điều kiện. Nếu đã có bộ, mở lại chỉ cập nhật tiến độ.
-- Không nhận được tin nhắn riêng vẫn có thể xem tiến độ bằng `/quests`. Nếu kênh bị khóa, không tìm thấy lệnh hoặc làm đúng mà vẫn chưa được tính, gửi tên nhiệm vụ, thời điểm và ảnh màn hình cho quản trị viên.
+- Xem tiến độ bằng `/quests` hoặc **Xem tiến độ mới**. Nếu server bật tin nhắn riêng, MarStreak gửi một tin khi hoàn thành cả ba việc. Nếu kênh bị khóa, không tìm thấy lệnh hoặc làm đúng mà vẫn chưa được tính, gửi tên nhiệm vụ, thời điểm và ảnh màn hình cho quản trị viên.

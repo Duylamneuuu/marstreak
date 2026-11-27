@@ -1,8 +1,10 @@
 # MarStreak · DC1
 
-MarStreak giúp thành viên MarWuy điểm danh và tham gia hoạt động trên Discord. `/checkin` ghi ngày điểm danh, tính chuỗi ngày liên tiếp và giao ba nhiệm vụ. `/quests` mở lại hướng dẫn và tiến độ của người gọi. Khi hoàn thành một việc, thành viên có thể nhận thông báo riêng.
+MarStreak giúp thành viên MarWuy điểm danh và tham gia hoạt động trên Discord. `/checkin` ghi ngày điểm danh, tính chuỗi ngày liên tiếp và giao ba nhiệm vụ. `/quests` mở lại hướng dẫn và tiến độ của người gọi. Mặc định bot ghi tiến độ im lặng. Người vận hành có thể bật một tin riêng khi thành viên đạt 3/3.
 
 Chuỗi chỉ phụ thuộc các ngày điểm danh liên tiếp. Điểm danh được tính riêng; tiến độ **0/3–3/3** chỉ tính ba nhiệm vụ được giao. Thành viên vẫn giữ chuỗi nếu điểm danh mỗi ngày, dù chưa hoàn thành đủ ba nhiệm vụ.
+
+Khi tiếp quản, đọc [Bàn giao](docs/HANDOFF.md) và [Trạng thái tính năng](docs/FEATURES.md#trạng-thái-tính-năng). Hai mục này ghi cấu hình mặc định, phần có thể bật và điều kiện cần kiểm tra trước khi mở cho thành viên. Bộ mẫu chạy với **Message Content Intent tắt**. [Quyền và dữ liệu dùng để tính quest](docs/FEATURES.md#quyền-và-dữ-liệu-dùng-để-tính-quest)
 
 | Mục đích | Tài liệu |
 | --- | --- |

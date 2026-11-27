@@ -2,6 +2,25 @@
 
 Mỗi ngày, MarStreak rút ba loại nhiệm vụ khác nhau từ `LAB_QUEST_POOL` mà thành viên đủ quyền làm. Gọi lại hoặc khởi động lại giữ bộ đã giao. Khi có dưới ba loại khả dụng, lượt điểm danh vẫn được lưu. Mở lại `/quests` trong cùng ngày khi đủ điều kiện. Ngày điểm danh tính theo lúc Discord nhận lệnh. Nếu thông tin nhiệm vụ chỉ sẵn sàng sau reset, dùng `/checkin` để nhận việc của ngày mới.
 
+## Trạng thái tính năng
+
+Trạng thái dưới đây áp dụng cho bản cài từ [`.env.example`](../.env.example). Người vận hành đối chiếu cấu hình trên máy đích để biết phiên bản đang giao việc gì.
+
+| Tính năng | Mặc định | Mở hoặc đổi khi cần |
+| --- | --- | --- |
+| Điểm danh, chuỗi ngày và bảng quest | Hoạt động sau khi cài bot. | Thành viên dùng `/checkin`, `/quests`, **Xem tiến độ mới** và **Cách làm nhiệm vụ**. |
+| Voice, Reaction và Community | Nằm trong bộ ba mẫu. Reaction thu nhận emoji mới trên tin bot thấy. Community dùng một thread công khai được chỉ định. | Cấu hình phòng Voice và thread. Có thể giới hạn Reaction vào một tin và emoji cụ thể hoặc tạm ngừng giao Community. [Cấu hình](#cấu-hình-voice-reaction-community-và-poll) |
+| DM hoàn thành | Tắt. Bot lưu tiến độ và thành viên tự mở lại bảng để xem. | `QUEST_COMPLETION_DM=true` gửi một tin riêng tại 3/3 cho người hoàn thành. Khởi động lại để áp dụng. |
+| Poll Discord | Có mã, nằm ngoài danh sách mẫu. | Cần bài Poll còn nhận phiếu, link và giờ đóng. Thêm `poll` sau khi thử quyền ở kênh đích. [Cấu hình](#cấu-hình-voice-reaction-community-và-poll) |
+| Wheat, Zodiac, Dyno và AsterieBot | Có 9 quest đã cấu hình được, nằm ngoài danh sách mẫu. | Cài đúng app, thử lệnh có phản hồi công khai, điền ID kênh và thêm từng mã đã xác minh vào danh sách giao. [Danh sách lệnh](#nhiệm-vụ-từ-bot-khác) |
+| `/rank` của Mar Wuỷ | Có mã dự phòng, chưa đăng ký vào danh sách quest. | Cần thẻ hạng công khai và cách xác minh thẻ thuộc người gọi. Hiện chưa có cấu hình để bật Rank. [Kết quả khảo sát](QA-2026-11-26.md#xem-hạng-với-mar-wuỷ) · [Mã nguồn](../src/integrations/marwuy-rank.js) |
+
+## Quyền và dữ liệu dùng để tính quest
+
+Trong **Developer Portal → Bot → Privileged Gateway Intents**, để **Message Content**, **Server Members** và **Presence** tắt cho phạm vi hiện tại. MarStreak dùng sự kiện tiêu chuẩn của Discord. Voice lấy trạng thái kết nối, Reaction lấy metadata của lượt thả emoji, Community lấy người gửi và thread, Poll lấy sự kiện bỏ phiếu. Quest bot ngoài đối chiếu metadata từ phản hồi công khai ban đầu để biết đúng app, người gọi, tên lệnh và kênh. [Mã khởi động](../src/bot.js) · [Cách chấm lệnh ngoài](../src/integrations/slash-command-quest.js) · [Tài liệu Gateway của Discord](https://docs.discord.com/developers/events/gateway#message-content-intent)
+
+Phản hồi chỉ người dùng thấy hoặc qua DM của bot nguồn nằm ngoài phạm vi chấm. Với phản hồi công khai, tín hiệu hiện có xác nhận **lượt gọi lệnh**, kể cả khi tin đang tải. Tín hiệu này không xác nhận số lá Tarot, tham số xúc xắc hay kết quả trả về. Khi thêm quest cần kiểm tra nội dung hoặc kết quả, xác minh nguồn dữ liệu và quyền cần thiết trước khi đổi tiêu chí. [Trường interaction trên tin nhắn Discord](https://docs.discord.com/developers/resources/message#message-object)
+
 ## Cấu hình cơ bản
 
 Điền thông tin trong `.env` trên máy vận hành hoặc tệp cấu hình VPS. Để sao chép ID trong Discord, bật **Developer Mode**, rồi dùng **Copy Server ID**, **Copy Channel ID** hoặc **Copy Message ID**.
@@ -13,6 +32,7 @@ Mỗi ngày, MarStreak rút ba loại nhiệm vụ khác nhau từ `LAB_QUEST_PO
 | `LAB_QUEST_POOL` | Mã quest cách nhau bằng dấu phẩy. Mẫu dùng `voice,reaction,community` để demo trên một server riêng. |
 | `LAB_VOICE_CHANNEL_IDS`, `LAB_VOICE_SECONDS` | ID các phòng Voice cách nhau bằng dấu phẩy và số giây bắt buộc. Mẫu để 120 giây. |
 | `CHECKIN_RESET_TIME`, `CHECKIN_DB_PATH` | Giờ làm mới theo giờ Việt Nam và vị trí SQLite. Mẫu để `00:00` và `data/checkins.sqlite`. |
+| `QUEST_COMPLETION_DM` | Mặc định `false`. Đặt `true` để gửi một tin riêng cho thành viên ngay khi hoàn thành cả ba nhiệm vụ trong ngày. Khởi động lại bot sau khi đổi. |
 
 Bot cần thấy kênh được cấu hình. Thời lượng Voice tính theo các khoảng kết nối quan sát được trong phòng hợp lệ. Thành viên cần vào được phòng Voice, mở được tin hoặc gửi được tin trong thread tương ứng. Cấp quyền theo kênh, không cần Administrator. [Discord Permissions](https://docs.discord.com/developers/topics/permissions)
 
