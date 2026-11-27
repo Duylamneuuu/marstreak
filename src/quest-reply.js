@@ -14,7 +14,7 @@ const progressCopy = [
 export async function makeQuestBoard(quests, { pool, context, voiceSeconds, resetTime, checkInCommand }) {
   if (!quests?.length) {
     return {
-      content: Array.isArray(quests) ? 'Đã điểm danh. Wủy đang chờ đủ ba việc bạn có thể làm. Bạn mở lại `/quests` sau nha.' : 'Chưa có nhiệm vụ hôm nay. Wủy Con dùng ' + checkInCommand + ' để nhận ba việc nha.',
+      content: Array.isArray(quests) ? 'Đã điểm danh. Wủy đang chờ đủ ba việc bạn có thể làm. Bạn mở lại `/quests` sau nha.' : 'Wủy Con chưa điểm danh hôm nay. Dùng ' + checkInCommand + ' để giữ chuỗi và nhận ba nhiệm vụ nha.',
       embeds: [],
       components: [],
     };

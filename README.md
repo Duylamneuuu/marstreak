@@ -2,6 +2,8 @@
 
 MarStreak giúp thành viên MarWuy điểm danh và tham gia hoạt động trên Discord. `/checkin` ghi ngày điểm danh, tính chuỗi ngày liên tiếp và giao ba nhiệm vụ. `/quests` mở lại hướng dẫn và tiến độ của người gọi. Khi hoàn thành một việc, thành viên có thể nhận thông báo riêng.
 
+Chuỗi chỉ phụ thuộc các ngày điểm danh liên tiếp. Điểm danh được tính riêng; tiến độ **0/3–3/3** chỉ tính ba nhiệm vụ được giao. Thành viên vẫn giữ chuỗi nếu điểm danh mỗi ngày, dù chưa hoàn thành đủ ba nhiệm vụ.
+
 | Mục đích | Tài liệu |
 | --- | --- |
 | Xem sản phẩm | [Demo 0/3 đến 3/3](docs/demo/README.md) · [Kết quả kiểm thử](docs/QA-2026-11-27.md) |

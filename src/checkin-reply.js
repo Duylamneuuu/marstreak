@@ -11,8 +11,8 @@ export function makeCheckInReply({ created, day, streak, quests }) {
       ? 'Hí hô Wủy Con, điểm danh xong rùi! ✨'
       : 'Hôm nay Wủy Con điểm danh rùi 👀')
     .setDescription(quests?.length === 0 ? 'Đã giữ chuỗi hôm nay. Dùng `/quests` sau để nhận nhiệm vụ nha.' : created
-      ? 'Ba nhiệm vụ hôm nay ở ngay bên dưới nha.'
-      : 'Wủy giữ bộ nhiệm vụ hôm nay để bạn làm tiếp nha.')
+      ? 'Điểm danh đã được tính vào chuỗi rồi. Ba nhiệm vụ bên dưới tính riêng nha.'
+      : 'Wủy giữ nguyên bộ nhiệm vụ và tiến độ hôm nay nha.')
     .setThumbnail(`attachment://${thumbnailName}`)
     .addFields({ name: 'Chuỗi điểm danh', value: `🔥 **${streak} ngày liên tiếp**` });
 

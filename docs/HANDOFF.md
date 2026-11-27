@@ -2,7 +2,9 @@
 
 ## Tổng quan
 
-Mỗi thành viên có một chuỗi điểm danh và một bảng nhiệm vụ riêng trong Discord. Sau khi nhận ba việc bằng `/checkin`, thành viên làm theo hướng dẫn trên thẻ và dùng `/quests` để xem tiến độ. Gọi lại cùng ngày hoặc khởi động lại bot vẫn giữ bộ đã giao.
+Thành viên gọi `/checkin` một lần để ghi điểm danh và nhận ba nhiệm vụ. Bot gửi thẻ xác nhận kèm chuỗi ngày, rồi gửi bảng nhiệm vụ ngay sau đó; hai phản hồi chỉ người gọi thấy. Dùng `/quests` hoặc nút **Xem tiến độ mới** để xem lại. Gọi lại cùng ngày hoặc khởi động lại bot vẫn giữ bộ đã giao và tiến độ.
+
+Chuỗi chỉ phụ thuộc các ngày điểm danh liên tiếp. Điểm danh được tính riêng; tiến độ **0/3–3/3** chỉ tính ba nhiệm vụ được giao. Thành viên vẫn giữ chuỗi nếu điểm danh mỗi ngày, dù chưa hoàn thành đủ ba nhiệm vụ.
 
 ## Demo
 
