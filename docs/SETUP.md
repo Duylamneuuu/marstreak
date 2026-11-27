@@ -98,7 +98,7 @@ Chờ dòng **MarStreak sẵn sàng. Đã kiểm tra ID/quyền và đăng ký /
 3. Bấm **Xem tiến độ mới** hoặc gọi `/quests` để thấy từng nhiệm vụ được đánh dấu đến **3/3**. Bảng đã mở không tự cập nhật. DM có thể báo tiến độ nếu thành viên cho phép nhận tin riêng.
 4. Bấm **Cách làm nhiệm vụ** để mở hướng dẫn riêng ngay trong Discord. Nút này chỉ giải thích cách làm; kiểm tra rằng bấm nút không thay đổi điểm danh hoặc tiến độ.
 
-**Điểm danh không tăng 0/3 thành 1/3:** điểm danh giữ chuỗi; ba việc trên mới là nhiệm vụ. `/quests` chỉ xem lại, không tự điểm danh. Lượt thả emoji hoặc gửi tin trước khi nhận bộ không được tính; emoji còn từ hôm trước cần gỡ rồi thả mới sau khi nhận bộ hôm nay. [Hướng dẫn có thể ghim cho thành viên](MEMBER-GUIDE.md)
+Điểm danh giữ chuỗi ngày. Tiến độ bắt đầu ở 0/3 và tăng khi hoàn thành từng nhiệm vụ. Nếu lúc điểm danh chưa đủ ba việc khả dụng, dùng `/quests` sau khi đủ điều kiện để nhận bộ đầu tiên trong ngày. Nút **Xem tiến độ mới** dùng cùng cơ chế. Cả hai đều yêu cầu đã điểm danh. Lượt thả emoji hoặc gửi tin trước khi nhận bộ không được tính; emoji còn từ hôm trước cần gỡ rồi thả mới sau khi nhận bộ hôm nay. [Hướng dẫn có thể ghim cho thành viên](MEMBER-GUIDE.md)
 
 Chỉ chạy một tiến trình cho mỗi ứng dụng và tệp SQLite. Dừng bằng **Ctrl+C**, chạy lại bằng `npm start`. Trên Windows, có thể dùng [START-LAB và STOP-LAB](../DEMO-KIT/README.md) sau khi đã hoàn tất cấu hình; không mở thêm launcher khi bot còn chạy trong terminal.
 

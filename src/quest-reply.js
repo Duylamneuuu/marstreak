@@ -21,8 +21,8 @@ export function makeQuestHelp({ checkInCommand, questsCommand, resetTime }) {
   const content = [
     '**1. Nhận nhiệm vụ**\nDùng ' + checkInCommand + '. Wủy gửi thẻ điểm danh và ba nhiệm vụ ngay sau đó.',
     '**2. Làm theo từng dòng**\nBấm tên kênh hoặc link trong nhiệm vụ để đến đúng chỗ. Làm sau khi nhận nhiệm vụ nha.',
-    '• **Voice:** vào phòng trên bảng, ở đủ thời lượng được ghi. Rời rồi vào lại vẫn cộng dồn trong ngày.',
-    '• **Thả emoji:** làm theo tin và emoji trên bảng. Nếu đã thả từ trước, gỡ rồi thả lại.',
+    '• **Voice:** ở đủ thời lượng trong phòng hợp lệ. Xem các phòng gợi ý trên bảng. Rời rồi vào lại vẫn cộng dồn trong ngày.',
+    '• **Thả emoji:** nếu bảng chỉ định một tin, thả đúng emoji vào tin đó. Nếu được tự chọn, thả ở bất kỳ kênh nào Wủy thấy. Nếu emoji đã có từ trước, gỡ rồi thả lại.',
     '• **Chủ đề / bình chọn:** gửi tin mới trong đúng chủ đề, hoặc chọn đáp án rồi bấm **Vote** ở bài được giao.',
     '• **Lệnh bot khác:** mở đúng kênh, chọn đúng lệnh và tên bot, điền tùy chọn nếu có rồi **gửi lệnh**. Chỉ cần dùng lệnh được giao một lần.',
     '**3. Xem kết quả**\nWủy tự ghi nhận, bạn không cần nộp ảnh. Bấm **Xem tiến độ mới** hoặc dùng ' + questsCommand + ' để cập nhật bảng.',

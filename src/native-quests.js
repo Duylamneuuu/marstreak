@@ -57,7 +57,9 @@ export function createNativeQuests(config) {
         const rooms = config.voiceIds.filter(id => !context || canJoin(context.channels.get(id), context));
         if (!rooms.length) return 'Chưa có phòng Voice bạn vào được. Nhờ quản trị viên kiểm tra quyền nha.';
         const links = rooms.slice(0, 3).map(id => '<#' + id + '>').join(', ');
-        return 'Ở trong ' + (rooms.length === 1 ? links : 'một trong các phòng ' + links)
+        const where = rooms.length > 3 ? 'phòng Voice hợp lệ, ví dụ ' + links
+          : (rooms.length === 1 ? links : 'một trong các phòng ' + links);
+        return 'Ở trong ' + where
           + ' đủ **' + duration + '**, cộng dồn trong ngày. Đã tính **' + voiceProgress(assignment, goal) + '**.';
       },
     },
@@ -78,8 +80,8 @@ export function createNativeQuests(config) {
       instruction: (_assignment, context) => {
         if (!reactionTarget) {
           const example = reactionRoom(context);
-          return (example ? 'Mở <#' + example + '> và thả một emoji mới vào một tin nhắn.'
-            : 'Thả một emoji mới vào một tin nhắn ở kênh Wủy nhìn thấy.')
+          return 'Thả một emoji mới vào một tin nhắn ở bất kỳ kênh nào Wủy nhìn thấy'
+            + (example ? ', ví dụ <#' + example + '>.' : '.')
             + ' Nếu đã thả từ trước, gỡ rồi thả lại nha.';
         }
         const link = guildLink + reactionTarget.channelId + '/' + reactionTarget.messageId;

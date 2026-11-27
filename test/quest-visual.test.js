@@ -87,6 +87,7 @@ test('member instructions remain within Discord limits with a large Voice config
     assert.ok(response.components[0].toJSON().components.length <= 5);
   }
   const description = board.embeds[0].data.description;
+  assert.match(description, /phòng Voice hợp lệ, ví dụ/);
   assert.match(description, /<:quest:1573008410574589973>/);
   assert.equal((description.match(/<#/g) ?? []).length, 4);
   assert.match(description, /1\. Vào phòng Voice.*2\. Thả emoji.*3\. So độ hợp hai cung/s);

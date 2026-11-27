@@ -32,8 +32,8 @@ Chỉ làm những loại xuất hiện trên bảng của bạn. Với lệnh b
 
 | Nhiệm vụ | Cách làm |
 | --- | --- |
-| **Vào phòng Voice** | Vào một phòng được liệt kê và ở đủ thời lượng ghi trên bảng. Xem phần “Đã tính” để biết còn bao lâu. Rời rồi vào lại giữ thời gian đã tích lũy trong ngày; ở phòng khác không được cộng. |
-| **Thả emoji** | Nếu bảng dẫn tới một tin cụ thể, thả đúng emoji vào tin đó. Nếu bảng cho phép thả ở kênh bất kỳ bot thấy, dùng kênh gợi ý. Cần một lượt thả mới sau khi nhận nhiệm vụ; emoji còn từ hôm trước phải gỡ rồi thả lại. |
+| **Vào phòng Voice** | Ở phòng Voice hợp lệ đủ thời lượng ghi trên bảng. Khi có hơn ba phòng, bảng nêu ba phòng ví dụ. Xem phần “Đã tính” để biết còn bao lâu. Rời rồi vào lại giữ thời gian đã tích lũy trong ngày; chỉ thời gian ở các phòng đã cấu hình mới được cộng. |
+| **Thả emoji** | Nếu bảng dẫn tới một tin cụ thể, thả đúng emoji vào tin đó. Ở chế độ tự chọn, thả vào tin bất kỳ trong kênh bot nhìn thấy. Kênh trên bảng là một ví dụ. Cần một lượt thả mới sau khi nhận nhiệm vụ; emoji còn từ hôm trước phải gỡ rồi thả lại. |
 | **Gửi tin trong chủ đề** | Mở chủ đề được dẫn trên bảng, gửi một tin hoặc trả lời cuộc trò chuyện. Viết phù hợp chủ đề và nội quy; nhiệm vụ ghi nhận lượt tham gia, không chấm nội dung câu trả lời. |
 | **Bình chọn** | Mở đúng bài bình chọn, chọn đáp án rồi bấm **Vote** trước hạn ghi trên bảng. Chọn đáp án mà chưa bấm Vote thì chưa gửi phiếu. |
 | **Tarot cùng Wheat** | Chọn `/tarot` của **Wheat**, có thể giữ tùy chọn mặc định, rồi gửi. |
@@ -53,5 +53,5 @@ Chỉ làm những loại xuất hiện trên bảng của bạn. Với lệnh b
 - Bấm **Xem tiến độ mới** hoặc gọi `/quests` của MarStreak để lấy kết quả mới. Bảng đã mở không tự đổi mỗi khi bạn thao tác.
 - Kiểm tra việc đó có trong **bộ hôm nay**, bạn đã nhận bộ trước khi làm, và đã chọn đúng kênh, tin nhắn, emoji hoặc bot. Nhiều bot có cùng lệnh `/coinflip`.
 - Với Voice, xem thời lượng **Đã tính** trên bảng; thời gian bot mất kết nối không được cộng.
-- Nếu bot báo đang chờ đủ ba việc, lượt điểm danh vẫn được giữ. Mở lại `/quests` sau; nếu kéo dài, nhờ quản trị viên kiểm tra.
+- Nếu bot báo đang chờ đủ ba việc, lượt điểm danh vẫn được giữ. Mở lại `/quests` trong ngày để nhận bộ đầu tiên khi đủ điều kiện. Nếu đã có bộ, mở lại chỉ cập nhật tiến độ.
 - Không nhận được tin nhắn riêng vẫn có thể xem tiến độ bằng `/quests`. Nếu kênh bị khóa, không tìm thấy lệnh hoặc làm đúng mà vẫn chưa được tính, gửi tên nhiệm vụ, thời điểm và ảnh màn hình cho quản trị viên.
