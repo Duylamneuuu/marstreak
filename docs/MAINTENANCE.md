@@ -1,11 +1,12 @@
 # Hướng dẫn phát triển
 
-Dùng ứng dụng Discord của Lab và SQLite riêng khi thử thay đổi. Xem [cách cài lần đầu](../README.md#chạy-thử-trong-server-discord-riêng).
+Dùng ứng dụng Discord của Lab và SQLite riêng khi thử thay đổi. Xem [cách cài lần đầu](SETUP.md).
 
 | Thay đổi | Sửa ở đâu và kiểm tra thế nào |
 | --- | --- |
 | Đổi phòng, thời lượng hoặc danh sách giao | Sửa `.env` trên máy chạy. [Bảng biến và mã nhiệm vụ](FEATURES.md). Ví dụ, `LAB_VOICE_SECONDS=120` là hai phút. Khởi động lại và thử bằng quyền thành viên thường. |
-| Đổi tên nhiệm vụ, lời điểm danh hoặc lời báo tiến độ | [Tên và nhãn ngắn](../src/quest-names.js), [thẻ điểm danh](../src/checkin-reply.js), [bảng nhiệm vụ và DM](../src/quest-reply.js). |
+| Đổi tên nhiệm vụ, lời điểm danh hoặc lời báo tiến độ | [Tên và nhãn ngắn](../src/quest-names.js), [thẻ điểm danh](../src/checkin-reply.js), [bảng nhiệm vụ, nút Cách làm nhiệm vụ và DM](../src/quest-reply.js). |
+| Đổi hướng dẫn thành viên | Sửa `instruction` trong [nhiệm vụ gốc](../src/native-quests.js), [Poll](../src/poll-quest.js) hoặc [mẫu lệnh bot ngoài](../src/integrations/slash-command-quest.js). Cập nhật cùng thông tin trong [hướng dẫn và tin nhắn ghim](MEMBER-GUIDE.md). Giữ hướng dẫn khớp điều kiện chấm. |
 | Đổi mascot, nền hoặc màu | Đổi PNG tương ứng trong [assets](../assets/) và chỉnh [bộ dựng ảnh](../src/quest-visual.js). Chạy `npm run preview:quests`, mở ảnh trong `previews/` và thử hiển thị trên Discord. |
 | Bot báo thiếu ID hoặc quyền | Xem tên biến trong log. [Đọc cấu hình](../src/config.js) kiểm tra định dạng. [Kiểm tra đích](../src/lab-targets.js) đối chiếu loại kênh, tin đích và quyền trên Discord. |
 | Phát hành hoặc quay lại bản trước | Trước khi nâng cấp, ghi SHA đang chạy, sao lưu SQLite và giữ bản cấu hình hiện tại. Chạy `npm test`, thử Lab, rồi áp dụng [quy trình cập nhật và quay lui](VPS.md#5-sao-lưu-khôi-phục-và-nâng-cấp). Bản trước khi sửa ranh giới ngày là [f6dcb35](https://github.com/Duylamneuuu/marstreak/commit/f6dcb354f5733488d31ad7ea417b3a0d9aa468d9). |
@@ -13,6 +14,8 @@ Dùng ứng dụng Discord của Lab và SQLite riêng khi thử thay đổi. Xe
 ## Điểm danh và giao việc
 
 [Handler lệnh](../src/daily-interaction.js) lấy ngày từ `interaction.createdTimestamp` và ghi điểm danh trước khi chờ thông tin kênh hoặc bot nguồn. [Kho SQLite](../src/checkins.js) giữ duy nhất một lượt theo server, thành viên và ngày. Khi giao việc, bot kiểm tra ngày sau khi lấy khóa ghi và đặt `assigned_at` theo thời điểm giao. Lệnh tới trước reset có thể giữ chuỗi ngày cũ dù bot trả lời sau reset. Thành viên dùng `/checkin` cho ngày mới. [Regression ranh giới ngày](../test/daily-interaction.test.js)
+
+Nút **Cách làm nhiệm vụ** trả hướng dẫn riêng, không đọc hoặc ghi SQLite, không giao nhiệm vụ và không tra cứu bot nguồn. Nút **Xem tiến độ mới** tiếp tục dùng luồng `/quests` để lấy trạng thái hiện tại. Khi đổi nội dung trợ giúp, giữ giới hạn độ dài embed và kiểm tra cùng các nút trong [test hiển thị](../test/quest-visual.test.js).
 
 ## Thêm một nhiệm vụ từ bot khác
 

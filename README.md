@@ -6,6 +6,8 @@ Chuỗi chỉ phụ thuộc các ngày điểm danh liên tiếp. Điểm danh �
 
 | Mục đích | Tài liệu |
 | --- | --- |
+| Cài bot lần đầu | [Hướng dẫn từng bước: app, quyền, ID, cấu hình và chạy thử](docs/SETUP.md) |
+| Hướng dẫn thành viên | [Tin nhắn có thể ghim và cách làm từng nhiệm vụ](docs/MEMBER-GUIDE.md) |
 | Xem sản phẩm | [Demo 0/3 đến 3/3](docs/demo/README.md) · [Kết quả kiểm thử](docs/QA-2026-11-27.md) |
 | Duyệt phạm vi và phân công | [Hồ sơ bàn giao](docs/HANDOFF.md) |
 | Cấu hình danh sách nhiệm vụ và quyền | [Tính năng và cấu hình](docs/FEATURES.md) |
@@ -14,30 +16,9 @@ Chuỗi chỉ phụ thuộc các ngày điểm danh liên tiếp. Điểm danh �
 
 ## Chạy thử trong server Discord riêng
 
-1. Chuẩn bị Node.js 24 và một ứng dụng Discord thuộc quyền quản lý của dự án. Trong Developer Portal, chọn **Guild Install** với hai scope `bot` và `applications.commands`, rồi cài app vào server thử. Thành viên cần quyền **Use Application Commands**. [Node.js](https://nodejs.org/en/download) · [Discord Developer Portal](https://discord.com/developers/applications) · [Hướng dẫn của Discord](https://docs.discord.com/developers/quick-start/getting-started)
-2. Với cấu hình mẫu, chuẩn bị một phòng Voice, một kênh chữ có thể thả emoji và một thread công khai đang mở. Bật **Developer Mode** trong Discord để sao chép ID.
-3. Tải mã nguồn và kiểm tra môi trường.
+Mở [SETUP](docs/SETUP.md) và làm lần lượt: cài ứng dụng Discord, chuẩn bị kênh, điền token và bốn ID, rồi chạy bằng Node.js 24. Bộ mẫu dùng **Voice 120 giây + thả emoji + gửi tin trong thread**, không cần Message Content Intent. Hướng dẫn có sẵn mẫu `.env`, quyền theo vai trò, kết quả cần thấy và cách xử lý lỗi thường gặp.
 
-   ```sh
-   git clone https://github.com/Duylamneuuu/marstreak.git
-   cd marstreak
-   npm ci
-   npm test
-   ```
-
-4. Sao chép [`.env.example`](.env.example) thành `.env` cùng cấp với `package.json`. Điền các giá trị dưới đây trên máy chạy bot.
-
-   | Biến | Nguồn |
-   | --- | --- |
-   | `DISCORD_TOKEN` | Token trong mục **Bot** của ứng dụng |
-   | `DISCORD_APPLICATION_ID` | **General Information → Application ID** của cùng ứng dụng |
-   | `DISCORD_GUILD_ID` | **Copy Server ID** của server thử |
-   | `LAB_VOICE_CHANNEL_IDS` | **Copy Channel ID** của phòng Voice hợp lệ |
-   | `LAB_COMMUNITY_THREAD_ID` | **Copy Channel ID** của chính thread công khai |
-
-5. Chạy `npm start`. Khi xuất hiện **MarStreak sẵn sàng**, dùng tài khoản thành viên gọi `/checkin` trong server thử. Với cấu hình mẫu, ở trong phòng Voice hai phút, thả một emoji mới và gửi một tin trong thread được giao. Mở `/quests`, kiểm tra 3/3, rồi khởi động lại bot với cùng SQLite và mở lại bảng.
-
-Dùng một tiến trình cho mỗi ứng dụng và tệp SQLite. Dừng tiến trình trong terminal bằng Ctrl+C. Trên Windows có thể dùng launcher sau khi cấu hình xong. Token, dữ liệu thành viên, bản sao lưu và log thuộc máy vận hành. [Hướng dẫn Windows](DEMO-KIT/README.md)
+Khi bot báo **MarStreak sẵn sàng**, `/checkin` gửi thẻ điểm danh và bảng ba nhiệm vụ ngay sau đó. Dùng [hướng dẫn thành viên](docs/MEMBER-GUIDE.md) để thử hoặc sao chép phần tin nhắn ghim vào kênh giới thiệu. Chạy một tiến trình cho mỗi ứng dụng và tệp SQLite; xem [Windows](DEMO-KIT/README.md) hoặc [VPS](docs/VPS.md) cho cách vận hành.
 
 ## Hình ảnh và phạm vi sử dụng
 

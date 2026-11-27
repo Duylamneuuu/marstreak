@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { openCheckInStore } from '../src/checkins.js';
 import { createDailyInteractionHandler } from '../src/daily-interaction.js';
-import { questRefreshId } from '../src/quest-reply.js';
+import { questHelpId, questRefreshId } from '../src/quest-reply.js';
+import { MessageFlags } from 'discord.js';
 
 const before = Date.parse('2026-11-27T23:59:59+07:00');
 const after = before + 2000;
@@ -14,7 +15,7 @@ function setup(t, now = before, resetTime = '00:00') {
   t.after(() => store.close());
   const options = {
     config: { guildId: 'lab', resetTime, voiceSeconds: 120 }, store,
-    pool: { eligibleKinds: () => kinds, instruction: q => q.kind },
+    pool: { eligibleKinds: () => kinds, instruction: q => q.kind, name: kind => kind },
     voice: { checkpoint() {} }, isOnline: () => true,
     commandMention: name => '/' + name, readSourceBots: async () => new Map(),
   };
@@ -26,12 +27,31 @@ function setup(t, now = before, resetTime = '00:00') {
       commandName: command, isButton: () => command === 'refresh', customId: questRefreshId,
       isChatInputCommand: () => command !== 'refresh', inCachedGuild: () => true,
       deferReply: async () => {}, editReply: async reply => replies.push(reply),
-      followUp: async reply => replies.push(reply), ...overrides,
+      followUp: async reply => replies.push(reply), reply: async reply => replies.push(reply), ...overrides,
     };
     return createDailyInteractionHandler(options)(interaction).then(() => replies);
   }
   return { store, options, invoke };
 }
+
+test('quest help stays private and never reads or changes attendance, assignments or Voice', async t => {
+  const { store, options, invoke } = setup(t);
+  options.store = new Proxy({}, { get() { assert.fail('Help must not access the database'); } });
+  options.readSourceBots = () => assert.fail('Help must not query source bots');
+  options.readReactionTarget = () => assert.fail('Help must not query task targets');
+  options.voice.checkpoint = () => assert.fail('Help must not update Voice');
+  options.isOnline = () => false;
+  for (const stamp of [before, after]) {
+    t.mock.timers.setTime(stamp);
+    const replies = await invoke('refresh', before, { customId: questHelpId });
+    assert.equal(replies.length, 1);
+    assert.equal(replies[0].flags, MessageFlags.Ephemeral);
+    assert.match(replies[0].embeds[0].data.description, /\/checkin.*\/quests/s);
+    assert.equal(replies[0].files, undefined);
+    assert.equal(store.questsAfterCheckIn('lab', 'member', new Date(stamp), []), null);
+  }
+  assert.deepEqual(await invoke('refresh', after, { customId: questHelpId, guildId: 'other-server' }), []);
+});
 
 test('23:59:59 check-in survives a target lookup ending at 00:00:01; repeats and the next day stay separate', async t => {
   const { store, options, invoke } = setup(t);

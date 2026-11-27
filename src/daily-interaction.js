@@ -1,6 +1,6 @@
 import { MessageFlags } from 'discord.js';
 import { makeCheckInReply } from './checkin-reply.js';
-import { makeQuestBoard, questRefreshId } from './quest-reply.js';
+import { makeQuestBoard, makeQuestHelp, questHelpId, questRefreshId } from './quest-reply.js';
 
 function displayDay(day) {
   return day.split('-').reverse().join('/');
@@ -11,6 +11,12 @@ export function createDailyInteractionHandler({
 }) {
   return async interaction => {
     if (interaction.guildId !== config.guildId) return;
+    if (interaction.isButton() && interaction.customId === questHelpId) {
+      return await interaction.reply({
+        ...makeQuestHelp({ checkInCommand: commandMention('checkin'), questsCommand: commandMention('quests'), resetTime: config.resetTime }),
+        flags: MessageFlags.Ephemeral,
+      });
+    }
     const refresh = interaction.isButton() && interaction.customId === questRefreshId;
     const command = interaction.isChatInputCommand() && interaction.commandName;
     if (!refresh && command !== 'checkin' && command !== 'quests') return;
@@ -38,7 +44,7 @@ export function createDailyInteractionHandler({
       if (!accepted) return await interaction.editReply(reconnect);
       if (day !== store.currentDay()) return await interaction.editReply(resetReply());
       const context = interaction.inCachedGuild() ? {
-        channels: interaction.guild.channels.cache, member: interaction.member,
+        channels: interaction.guild.channels.cache, emojis: interaction.guild.emojis?.cache, member: interaction.member,
         botMember: interaction.guild.members.me, at,
       } : undefined;
       const needsTargets = context && !store.getQuests(guildId, userId, day).length;

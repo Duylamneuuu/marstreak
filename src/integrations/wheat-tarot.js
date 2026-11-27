@@ -8,5 +8,6 @@ export function createWheatTarotQuest(config) {
     appId: '786234973308715008',
     command: 'tarot',
     appName: 'Wheat',
+    option: 'Có thể giữ tùy chọn mặc định.',
   });
 }

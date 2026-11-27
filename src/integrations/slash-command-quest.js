@@ -45,7 +45,7 @@ export function createSlashCommandQuest(definition) {
       ]));
     },
     instruction: () => 'Mở <#' + channelId + '> rồi chọn `/' + command + '` của **' + appName + '**'
-      + (option ? '. ' + option : '.'),
+      + (option ? '. ' + option : '.') + ' **Gửi lệnh** một lần.',
     verify: (packet, observedAt) => verifyInvocation(definition, packet, observedAt),
   };
 }

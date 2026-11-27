@@ -56,9 +56,9 @@ export function createNativeQuests(config) {
       instruction: (assignment, context) => {
         const rooms = config.voiceIds.filter(id => !context || canJoin(context.channels.get(id), context));
         if (!rooms.length) return 'Chưa có phòng Voice bạn vào được. Nhờ quản trị viên kiểm tra quyền nha.';
-        const links = rooms.map(id => '<#' + id + '>').join(', ');
+        const links = rooms.slice(0, 3).map(id => '<#' + id + '>').join(', ');
         return 'Ở trong ' + (rooms.length === 1 ? links : 'một trong các phòng ' + links)
-          + ' đủ **' + duration + '**. Đã tính **' + voiceProgress(assignment, goal) + '**.';
+          + ' đủ **' + duration + '**, cộng dồn trong ngày. Đã tính **' + voiceProgress(assignment, goal) + '**.';
       },
     },
     {
@@ -78,11 +78,15 @@ export function createNativeQuests(config) {
       instruction: (_assignment, context) => {
         if (!reactionTarget) {
           const example = reactionRoom(context);
-          return 'Thả một emoji mới vào một tin ở kênh Wủy nhìn thấy' + (example ? ', ví dụ <#' + example + '>.' : '.');
+          return (example ? 'Mở <#' + example + '> và thả một emoji mới vào một tin nhắn.'
+            : 'Thả một emoji mới vào một tin nhắn ở kênh Wủy nhìn thấy.')
+            + ' Nếu đã thả từ trước, gỡ rồi thả lại nha.';
         }
         const link = guildLink + reactionTarget.channelId + '/' + reactionTarget.messageId;
-        const emoji = /^\d{17,20}$/.test(reactionTarget.emoji) ? 'emoji đã chọn' : reactionTarget.emoji;
-        return 'Thả ' + emoji + ' vào [tin nhắn này](<' + link + '>).';
+        const emoji = /^\d{17,20}$/.test(reactionTarget.emoji)
+          ? (context?.emojis?.get(reactionTarget.emoji)?.toString() ?? '<:quest:' + reactionTarget.emoji + '>')
+          : reactionTarget.emoji;
+        return 'Thả ' + emoji + ' vào [tin nhắn này](<' + link + '>). Nếu đã thả từ trước, gỡ rồi thả lại nha.';
       },
       verify: (packet, observedAt) => config.reactionUnavailable ? null : reactionProof(config, packet, observedAt),
     },
@@ -96,7 +100,7 @@ export function createNativeQuests(config) {
           && hasPermissions(thread, botMember, view)
           && hasPermissions(thread, member, [view, PermissionFlagsBits.SendMessagesInThreads]);
       },
-      instruction: () => config.threadId ? 'Gửi một tin trong [chủ đề này](<' + threadLink + '>).'
+      instruction: () => config.threadId ? 'Mở [chủ đề này](<' + threadLink + '>) và gửi một tin nhắn mới.'
         : 'Chủ đề này đang tạm đóng.',
       verify: message => communityProof(config, message),
     },

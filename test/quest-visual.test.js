@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import sharp from 'sharp';
 import { openCheckInStore } from '../src/checkins.js';
 import { questVisual, renderQuestCard } from '../src/quest-visual.js';
-import { makeQuestBoard, makeQuestUpdate, questRefreshId } from '../src/quest-reply.js';
+import { makeQuestBoard, makeQuestHelp, makeQuestUpdate, questHelpId, questRefreshId } from '../src/quest-reply.js';
 import { createNativeQuests } from '../src/native-quests.js';
 import { createLabCommandQuests } from '../src/integrations/lab-command-quests.js';
 import { createQuestPool } from '../src/quest-pool.js';
@@ -53,6 +53,7 @@ test('bảng nhiệm vụ có đường đi, trạng thái và nút cập nhật
     assert.match(description, openings[done]);
     assert.ok(description.includes('05:30'));
     assert.equal(board.components[0].toJSON().components[0].custom_id, questRefreshId);
+    assert.equal(board.components[0].toJSON().components[1].custom_id, questHelpId);
     if (done === 0) {
       assert.ok(description.includes('<#voice>'));
       assert.ok(description.includes('0:18 / 2:00'));
@@ -65,4 +66,28 @@ test('bảng nhiệm vụ có đường đi, trạng thái và nút cập nhật
     }
     if (done < quests.length) quests[done].completed_at = '2026-11-25T12:00:00Z';
   }
+});
+
+test('member instructions remain within Discord limits with a large Voice configuration', async () => {
+  const config = {
+    guildId: '1572632342768386128',
+    voiceIds: Array.from({ length: 100 }, (_, i) => String(1572632342768386100n + BigInt(i))),
+    voiceSeconds: 86400,
+    reactionTarget: { channelId: '1573008410574589972', messageId: '1574655417928257607', emoji: '1573008410574589973' },
+    zodiacExtrasChannel: '1573008410574589972',
+  };
+  const pool = createQuestPool([...createNativeQuests(config), ...createLabCommandQuests(config)]);
+  const options = { pool, voiceSeconds: 86400, resetTime: '04:30', checkInCommand: '</checkin:1573008410574589974>', questsCommand: '</quests:1573008410574589975>' };
+  const quests = [{ kind: 'voice', voice_ms: 0 }, { kind: 'reaction' }, { kind: 'zodiac-compatibility' }];
+  const board = await makeQuestBoard(quests, options);
+  const help = makeQuestHelp(options);
+  for (const response of [board, help]) {
+    const embed = response.embeds[0].toJSON();
+    assert.ok(embed.description.length < 4096);
+    assert.ok(response.components[0].toJSON().components.length <= 5);
+  }
+  const description = board.embeds[0].data.description;
+  assert.match(description, /<:quest:1573008410574589973>/);
+  assert.equal((description.match(/<#/g) ?? []).length, 4);
+  assert.match(description, /1\. Vào phòng Voice.*2\. Thả emoji.*3\. So độ hợp hai cung/s);
 });
