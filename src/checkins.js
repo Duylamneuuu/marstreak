@@ -145,10 +145,15 @@ export function openCheckInStore(databasePath, resetTime = '00:00') {
       return listQuests.all(guildId, userId, day);
     },
 
-    questsAfterCheckIn(guildId, userId, now, eligibleKinds) {
+    questsAfterCheckIn(guildId, userId, now, eligibleKinds, grantClock = () => now) {
       const day = checkInDay(now, resetMinutes);
       if (!hasCheckIn.get(guildId, userId, day)) return null;
-      return transaction(() => getOrAssignQuests(guildId, userId, day, eligibleKinds, now));
+      return transaction(() => {
+        // BEGIN IMMEDIATE may have waited for another SQLite writer across reset.
+        const grantedAt = grantClock();
+        if (checkInDay(grantedAt, resetMinutes) !== day) return null;
+        return getOrAssignQuests(guildId, userId, day, eligibleKinds, grantedAt);
+      });
     },
 
     currentDay(now = new Date()) {

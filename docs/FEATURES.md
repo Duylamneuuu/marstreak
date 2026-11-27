@@ -1,6 +1,6 @@
 # Tính năng và cấu hình
 
-Mỗi ngày, MarStreak rút ba loại nhiệm vụ khác nhau từ `LAB_QUEST_POOL` mà thành viên đủ quyền làm. Gọi lại hoặc khởi động lại giữ bộ đã giao. Nếu còn dưới ba loại khả dụng, bot giữ streak. Dùng lại `/quests` khi đủ ba loại để nhận việc.
+Mỗi ngày, MarStreak rút ba loại nhiệm vụ khác nhau từ `LAB_QUEST_POOL` mà thành viên đủ quyền làm. Gọi lại hoặc khởi động lại giữ bộ đã giao. Khi có dưới ba loại khả dụng, lượt điểm danh vẫn được lưu. Mở lại `/quests` trong cùng ngày khi đủ điều kiện. Ngày điểm danh tính theo lúc Discord nhận lệnh. Nếu thông tin nhiệm vụ chỉ sẵn sàng sau reset, dùng `/checkin` để nhận việc của ngày mới.
 
 ## Cấu hình cơ bản
 
@@ -14,9 +14,9 @@ Mỗi ngày, MarStreak rút ba loại nhiệm vụ khác nhau từ `LAB_QUEST_PO
 | `LAB_VOICE_CHANNEL_IDS`, `LAB_VOICE_SECONDS` | ID các phòng Voice cách nhau bằng dấu phẩy và số giây bắt buộc. Mẫu để 120 giây. |
 | `CHECKIN_RESET_TIME`, `CHECKIN_DB_PATH` | Giờ làm mới theo giờ Việt Nam và vị trí SQLite. Mẫu để `00:00` và `data/checkins.sqlite`. |
 
-Bot cần thấy kênh được cấu hình. Thành viên cần vào được phòng Voice, mở được tin hoặc gửi được tin trong thread tương ứng. Cấp quyền theo kênh, không cần Administrator. [Discord Permissions](https://docs.discord.com/developers/topics/permissions)
+Bot cần thấy kênh được cấu hình. Thời lượng Voice tính theo các khoảng kết nối quan sát được trong phòng hợp lệ. Thành viên cần vào được phòng Voice, mở được tin hoặc gửi được tin trong thread tương ứng. Cấp quyền theo kênh, không cần Administrator. [Discord Permissions](https://docs.discord.com/developers/topics/permissions)
 
-## Nhiệm vụ dự phòng
+## Cấu hình Voice, Reaction, Community và Poll
 
 | Tính năng | Bật | Tạm dừng hoặc đổi đích |
 | --- | --- | --- |
@@ -26,11 +26,11 @@ Bot cần thấy kênh được cấu hình. Thành viên cần vào được ph
 
 Sửa cấu hình rồi khởi động lại. Bot kiểm tra đích của những việc đang giao. Một việc đã bỏ khỏi danh sách vẫn được chấm cho người đã nhận nếu đích cũ còn hợp lệ. Với Poll, giờ đóng ghi theo dạng `2026-12-01T00:00:00+07:00`, bằng hoặc sớm hơn giờ đóng thật. Thành viên chọn một đáp án rồi bấm **Vote**. Đổi phiếu vẫn tính một lần. Bot dùng `GuildMessagePolls`, không lưu đáp án và không cần Message Content Intent. Discord có thể ẩn chi tiết của bài Poll do thành viên tạo, vì vậy Ops đối chiếu link và thời hạn bằng giao diện. [Tạo và vote Poll](https://support.discord.com/hc/en-us/articles/22163184112407-Polls-FAQ) · [Sự kiện Gateway](https://docs.discord.com/developers/events/gateway-events#message-poll-vote-add)
 
-Giữ ít nhất ba quest đủ điều kiện. Khi đổi đích hoặc luật, chọn sau giờ làm mới để người đã nhận vẫn làm đúng việc được giao. Để thử Poll chắc chắn nhận, dùng `voice,reaction,poll` với SQLite thử riêng.
+Giữ ít nhất ba quest đủ điều kiện. Khi đổi đích hoặc luật, chọn sau giờ làm mới để người đã nhận vẫn làm đúng việc được giao. Để Poll có mặt trong mỗi bộ ba, dùng `voice,reaction,poll` với SQLite thử riêng.
 
 ## Nhiệm vụ từ bot khác
 
-Cài app nguồn vào server bạn quản lý. Thử lệnh cho phản hồi công khai trong kênh và điền ID kênh tương ứng. MarStreak đối chiếu thông tin người gọi, app, lệnh, kênh và tin gốc do Discord cung cấp. Các app dưới đây đã được thử trong Lab. Cần thử lại quyền và phản hồi tại server mới. Không cần Message Content Intent.
+Cài ứng dụng nguồn vào server thử được phép quản lý. Thử lệnh cho phản hồi công khai trong kênh và điền ID kênh tương ứng. MarStreak đối chiếu thông tin người gọi, app, lệnh, kênh và tin gốc do Discord cung cấp. Một phản hồi công khai ban đầu, kể cả trạng thái đang tải, xác nhận lượt gọi lệnh. Bot không đọc nội dung kết quả hoặc xác định số lá Tarot. Các app dưới đây đã được thử trong Lab. Cần thử lại quyền và phản hồi tại server mới. Không cần Message Content Intent.
 
 | Biến kênh | Bot và lệnh | Mã trong `LAB_QUEST_POOL` |
 | --- | --- | --- |
@@ -41,7 +41,7 @@ Cài app nguồn vào server bạn quản lý. Thử lệnh cho phản hồi cô
 | `LAB_DYNO_ROLL_CHANNEL_ID` | Dyno `/roll` | `dyno-roll` |
 | `LAB_ASTERIE_QUEST_CHANNEL_ID` | AsterieBot `/astrology`, `/astromeme` | `asterie-astrology`, `asterie-astromeme` |
 
-Bộ 11 loại từng dùng ở Lab khi đã cấu hình đủ kênh:
+Bộ 11 loại từng dùng ở Lab yêu cầu cấu hình đủ kênh cho các ứng dụng sau.
 
 ```dotenv
 LAB_QUEST_POOL=voice,reaction,wheat-tarot,wheat-coinflip,zodiac-likes,zodiac-compatibility,zodiac-crystal,zodiac-coinflip,dyno-roll,asterie-astrology,asterie-astromeme
@@ -49,9 +49,9 @@ LAB_QUEST_POOL=voice,reaction,wheat-tarot,wheat-coinflip,zodiac-likes,zodiac-com
 
 Khi có nhiều bot cùng lệnh như `/coinflip`, chọn đúng tên app ở bên phải trong menu Discord. Nếu muốn thử nhóm cố định, dùng đúng ba mã và một file SQLite riêng.
 
-Khi bật Poll, chọn bài còn mở tới ít nhất kỳ làm mới tiếp theo. Giữ bài đang mở đến hạn. Khi bật quest bot ngoài, kiểm tra lệnh bằng role thành viên thường. MarStreak kiểm tra bot nguồn khi khởi động và quyền nhìn thấy kênh khi giao việc. Sau khi mời lại app hoặc khôi phục quyền truy cập bot nguồn, khởi động lại và thử lệnh trước khi mở cho thành viên.
+Khi bật Poll, chọn bài còn mở tới ít nhất kỳ làm mới tiếp theo. Giữ bài đang mở đến hạn. Khi bật quest bot ngoài, kiểm tra lệnh bằng role thành viên thường. MarStreak kiểm tra bot nguồn khi khởi động và quyền nhìn thấy kênh khi giao việc. Sau khi mời lại ứng dụng nguồn hoặc khôi phục quyền kênh, thử lệnh bằng tài khoản thành viên và kiểm tra lần giao nhiệm vụ mới.
 
-## Bot lưu gì trong SQLite?
+## Dữ liệu SQLite
 
 | Bảng | Dữ liệu của một thành viên trong một server |
 | --- | --- |

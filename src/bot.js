@@ -1,12 +1,12 @@
 import {
-  Client, Events, GatewayIntentBits, MessageFlags,
+  Client, Events, GatewayIntentBits,
   Routes, SlashCommandBuilder,
 } from 'discord.js';
 import { readConfig } from './config.js';
 import { createQuestBotReader, createReactionTargetReader, verifyTargets } from './lab-targets.js';
 import { createNotificationQueue, deliverQuestUpdate } from './quest-notification.js';
-import { makeCheckInReply } from './checkin-reply.js';
-import { makeQuestBoard, makeQuestUpdate, questRefreshId } from './quest-reply.js';
+import { createDailyInteractionHandler } from './daily-interaction.js';
+import { makeQuestUpdate } from './quest-reply.js';
 import { openCheckInStore } from './checkins.js';
 import { trackVoice, voiceTickMs } from './voice-quests.js';
 import { createQuestPool, enabledQuestKinds } from './quest-pool.js';
@@ -148,75 +148,11 @@ async function start(config) {
     }
   });
 
-  client.on(Events.InteractionCreate, handle('Lỗi lệnh DC1', async interaction => {
-    if (interaction.guildId !== config.guildId) return;
-    const refresh = interaction.isButton() && interaction.customId === questRefreshId;
-    const command = interaction.isChatInputCommand() && ['checkin', 'quests'].includes(interaction.commandName);
-    if (!refresh && !command) return;
-    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-    if (!online) {
-      await interaction.editReply('Wủy đang kết nối lại. Bạn thử sau một chút nha.');
-      return;
-    }
-
-    let checkInShown = false;
-    try {
-      const at = new Date(interaction.createdTimestamp);
-      const userId = interaction.user.id;
-      const context = interaction.inCachedGuild() ? {
-        channels: interaction.guild.channels.cache,
-        member: interaction.member,
-        botMember: interaction.guild.members.me,
-        at,
-      } : undefined;
-      const boardOptions = {
-        pool, context, voiceSeconds: config.voiceSeconds, resetTime: config.resetTime,
-        checkInCommand: commandMention('checkin'),
-      };
-      voice.checkpoint(userId, Date.now());
-      const day = store.currentDay(at);
-      const assigned = store.getQuests(config.guildId, userId, day);
-      if (context && !assigned.length) {
-        const room = context.channels.get(config.reactionTarget?.channelId);
-        [context.sourceBots, context.reactionMessage] = await Promise.all([
-          readSourceBots(interaction.guild),
-          enabled.includes('reaction') ? readReactionTarget(room) : undefined,
-        ]);
-        // Permission and session changes can arrive while the requests are in flight.
-        if (!online || stopping) {
-          await interaction.editReply('Wủy đang kết nối lại. Bạn thử sau một chút nha.');
-          return;
-        }
-        context.botMember = interaction.guild.members.me;
-      }
-      if (day !== store.currentDay()) {
-        await interaction.editReply('Sang ngày mới rồi. Bạn mở lại lệnh để xem việc hôm nay nha.');
-        return;
-      }
-      const eligibleKinds = context && !assigned.length ? pool.eligibleKinds(context) : [];
-      if (refresh || interaction.commandName === 'quests') {
-        const quests = store.questsAfterCheckIn(config.guildId, userId, at, eligibleKinds);
-        await interaction.editReply(await makeQuestBoard(quests, boardOptions));
-        return;
-      }
-      const result = store.recordCheckIn(config.guildId, userId, at, eligibleKinds);
-      await interaction.editReply(makeCheckInReply(result));
-      checkInShown = true;
-      await interaction.followUp({
-        ...await makeQuestBoard(result.quests, boardOptions),
-        flags: MessageFlags.Ephemeral,
-      });
-    } catch (error) {
-      console.error('Không trả được ' + (refresh ? 'tiến độ' : '/' + interaction.commandName) + ' (' + errorLabel(error) + ').');
-      if (checkInShown) {
-        await interaction.editReply({ content: 'Điểm danh đã lưu. Dùng ' + commandMention('quests') + ' để mở nhiệm vụ nha.' });
-      } else if (refresh) {
-        await interaction.editReply('Wủy chưa mở được tiến độ. Bạn thử lại sau một chút nha.');
-      } else {
-        await interaction.editReply('Wủy chưa hiện được kết quả. Bạn thử lại ' + commandMention(interaction.commandName) + ' sau một chút nha.');
-      }
-    }
-  }));
+  client.on(Events.InteractionCreate, handle('Lỗi lệnh DC1', createDailyInteractionHandler({
+    config, store, pool, voice, commandMention, readSourceBots,
+    readReactionTarget: enabled.includes('reaction') ? readReactionTarget : undefined,
+    isOnline: () => online && !stopping,
+  })));
 
   // One test guild. Clear the clock on both resumable and terminal disconnects.
   function disconnect() {

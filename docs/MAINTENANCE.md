@@ -1,14 +1,18 @@
-# Muốn sửa gì thì mở đâu?
+# Hướng dẫn phát triển
 
-Chạy thử bằng app Discord và SQLite của Lab. Xem [cách cài lần đầu](../README.md#chạy-thử-trong-server-discord-riêng).
+Dùng ứng dụng Discord của Lab và SQLite riêng khi thử thay đổi. Xem [cách cài lần đầu](../README.md#chạy-thử-trong-server-discord-riêng).
 
-| Việc muốn làm | Sửa ở đâu và kiểm tra thế nào |
+| Thay đổi | Sửa ở đâu và kiểm tra thế nào |
 | --- | --- |
 | Đổi phòng, thời lượng hoặc danh sách giao | Sửa `.env` trên máy chạy. [Bảng biến và mã nhiệm vụ](FEATURES.md). Ví dụ, `LAB_VOICE_SECONDS=120` là hai phút. Khởi động lại và thử bằng quyền thành viên thường. |
 | Đổi tên nhiệm vụ, lời điểm danh hoặc lời báo tiến độ | [Tên và nhãn ngắn](../src/quest-names.js), [thẻ điểm danh](../src/checkin-reply.js), [bảng nhiệm vụ và DM](../src/quest-reply.js). |
 | Đổi mascot, nền hoặc màu | Đổi PNG tương ứng trong [assets](../assets/) và chỉnh [bộ dựng ảnh](../src/quest-visual.js). Chạy `npm run preview:quests`, mở ảnh trong `previews/` và thử hiển thị trên Discord. |
 | Bot báo thiếu ID hoặc quyền | Xem tên biến trong log. [Đọc cấu hình](../src/config.js) kiểm tra định dạng. [Kiểm tra đích](../src/lab-targets.js) đối chiếu loại kênh, tin đích và quyền trên Discord. |
-| Đưa bản sửa lên hoặc quay lại | Trước khi nâng cấp, ghi SHA đang chạy, sao lưu SQLite và giữ bản cấu hình hiện tại. Chạy `npm test`, thử Lab, rồi áp dụng [quy trình cập nhật và quay lui](VPS.md#5-sao-lưu-khôi-phục-và-nâng-cấp). Mốc trước đợt sửa này là [04788f4](https://github.com/Duylamneuuu/marstreak/commit/04788f4370ac275973199ab7fc67fa595c151fac). |
+| Phát hành hoặc quay lại bản trước | Trước khi nâng cấp, ghi SHA đang chạy, sao lưu SQLite và giữ bản cấu hình hiện tại. Chạy `npm test`, thử Lab, rồi áp dụng [quy trình cập nhật và quay lui](VPS.md#5-sao-lưu-khôi-phục-và-nâng-cấp). Bản trước khi sửa ranh giới ngày là [f6dcb35](https://github.com/Duylamneuuu/marstreak/commit/f6dcb354f5733488d31ad7ea417b3a0d9aa468d9). |
+
+## Điểm danh và giao việc
+
+[Handler lệnh](../src/daily-interaction.js) lấy ngày từ `interaction.createdTimestamp` và ghi điểm danh trước khi chờ thông tin kênh hoặc bot nguồn. [Kho SQLite](../src/checkins.js) giữ duy nhất một lượt theo server, thành viên và ngày. Khi giao việc, bot kiểm tra ngày sau khi lấy khóa ghi và đặt `assigned_at` theo thời điểm giao. Lệnh tới trước reset có thể giữ chuỗi ngày cũ dù bot trả lời sau reset. Thành viên dùng `/checkin` cho ngày mới. [Regression ranh giới ngày](../test/daily-interaction.test.js)
 
 ## Thêm một nhiệm vụ từ bot khác
 
@@ -24,10 +28,10 @@ Dyno đang chạy qua bộ xác minh chung. [Bộ đọc nội dung Dyno cũ](..
 
 | Thử trong Lab | Kết quả mong đợi |
 | --- | --- |
-| Nhận ba việc bằng `/checkin`, làm từng việc qua Discord. Mở `/quests` sau mỗi lượt. Thử với hai nick. | Mỗi nick đi từ 0/3 tới 3/3 độc lập. Hai app có cùng tên lệnh chỉ cộng đúng việc. |
+| Nhận ba việc bằng `/checkin`, làm từng việc qua Discord. Mở `/quests` sau mỗi lượt. Thử với hai tài khoản. | Mỗi tài khoản đi từ 0/3 tới 3/3 độc lập. Hai app có cùng tên lệnh chỉ cộng đúng việc. |
 | Dừng bot, chạy lại cùng SQLite, gọi lại `/checkin` và `/quests`. | Bộ ba giữ nguyên thứ tự, dấu tick và streak. Điểm danh cùng ngày chỉ lưu một lượt. |
-| Một nick nhận quest X. Bỏ X khỏi `LAB_QUEST_POOL`, giữ ID kênh/tin cũ và khởi động lại. Sau đó thử nick đã nhận và nick điểm danh mới. | Nick đã nhận vẫn làm được X nếu đích còn hoạt động. Nick mới nhận bộ ba từ danh sách mới. |
-| Bật Reaction chỉ định. Thả emoji đúng, thử tin khác, sau đó gỡ quyền xem tin của bot trong môi trường thử. | Chỉ đúng tin và emoji được chấm. Nick mới sẽ không nhận quest ở nơi bot mất quyền. |
+| Một tài khoản nhận quest X. Bỏ X khỏi `LAB_QUEST_POOL`, giữ ID kênh/tin cũ và khởi động lại. Sau đó thử tài khoản đã nhận và tài khoản điểm danh mới. | Tài khoản đã nhận vẫn làm được X nếu đích còn hoạt động. Tài khoản mới nhận bộ ba từ danh sách mới. |
+| Bật Reaction chỉ định. Thả emoji đúng, thử tin khác, sau đó gỡ quyền xem tin của bot trong môi trường thử. | Chỉ đúng tin và emoji được chấm. Tài khoản mới sẽ không nhận quest ở nơi bot mất quyền. |
 | Vào phòng Voice chưa đủ thời gian rồi rời hoặc chuyển phòng. | Tiến độ dừng ở thời lượng hợp lệ. Nếu SQLite lỗi đúng lúc rời, bot bỏ khoảng chưa lưu để tránh cộng thời gian sau khi rời. |
 
 Kiểm thử lỗi SQLite và sự kiện gửi bù bằng `npm test`. Với sự kiện có thời gian gốc, bot kiểm ngày và thời điểm nhận quest theo thời gian đó. Reaction và Poll gửi bù chỉ tính nếu đã có nhiệm vụ trước khi mất kết nối và cả hai mốc nằm trong cùng ngày. Nếu Discord tạo phiên mới, các sự kiện bị lỡ có thể không được gửi lại. [Hướng dẫn Gateway](https://docs.discord.com/developers/events/gateway#resuming)

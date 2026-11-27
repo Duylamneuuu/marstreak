@@ -1,27 +1,31 @@
-# Bàn giao MarStreak · 27/11/2026
+# Bàn giao MarStreak
 
-Chị Cún có thể duyệt bản Lab ngay trên GitHub. Thành viên gõ `/checkin` để giữ chuỗi và nhận ba việc trong ngày. Mở `/quests` để xem còn việc gì và cần làm ở đâu.
+## Tổng quan
 
-## Xem trong 5 phút
+Mỗi thành viên có một chuỗi điểm danh và một bảng nhiệm vụ riêng trong Discord. Sau khi nhận ba việc bằng `/checkin`, thành viên làm theo hướng dẫn trên thẻ và dùng `/quests` để xem tiến độ. Gọi lại cùng ngày hoặc khởi động lại bot vẫn giữ bộ đã giao.
 
-1. Mở [bộ ảnh demo](demo/README.md). Thẻ 0/3 là lúc vừa điểm danh. Thẻ 3/3 và tin nhắn riêng cho thấy thành viên sẽ nhận được gì khi làm xong.
-2. Đọc [kết quả thử thật trên hai tài khoản](QA-2026-11-27.md). Cả hai đạt 3/3 độc lập và giữ đúng bộ nhiệm vụ sau restart. Người đã nhận Asterie vẫn làm xong sau khi đổi danh sách giao. Bộ test tự động đạt **50/50**.
-3. Nếu muốn tự chơi, nhờ người vận hành mở bot Lab. Trong Discord, chọn `/checkin` của **MarWuy DC1 Test**, làm theo một dòng trên thẻ rồi bấm **Xem tiến độ mới**.
+## Demo
 
-## Chị cần quyết định gì?
+1. Xem bộ thẻ từ 0/3 đến 3/3 và ví dụ tin nhắn riêng. Có thể mở thư viện ảnh trên máy khi chưa vào Lab. [Demo](demo/README.md)
+2. Trong Discord Lab, chọn `/checkin` của ứng dụng thử, làm một nhiệm vụ và bấm **Xem tiến độ mới**.
+3. Đối chiếu hành vi với kết quả kiểm thử. Hai tài khoản đã đạt 3/3 độc lập và giữ tiến độ qua restart ngày 27/11. Ca lệnh tới sát giờ reset có regression riêng trên SQLite local. [Kết quả và giới hạn](QA-2026-11-27.md)
 
-| Việc cần chốt | Bản đang có để chị xem |
+## Các quyết định cần xác nhận
+
+| Phạm vi | Quyết định |
 | --- | --- |
-| Mở những nhiệm vụ nào đợt đầu? | Voice, thả emoji và các lệnh bot ngoài đã thử trong Lab. Có thể bật gửi tin trong chủ đề hoặc bình chọn khi team có chủ đề hoặc bài bình chọn đang mở. [Danh sách và cách bật](FEATURES.md) |
-| Tính thế nào là xong? | Voice đang thử ở mức 2 phút, ngày mới bắt đầu lúc 00:00 giờ Việt Nam. Với Gaming, có thể chọn một lệnh cụ thể như `/roll` của Dyno. MarStreak ghi nhận thành viên đã gọi `/tarot` của Wheat. Số lá thành viên chọn vẫn chưa xác minh được. |
-| Có cần Rank ngay khi mở? | Lệnh xem hạng là `/rank` của **Mar Wuỷ**. Lần thử mới nhất app chưa trả thẻ. Rank đang tắt. Nếu bắt buộc ở đợt đầu, cần người quản lý app khôi phục lệnh và thử lại với thành viên. |
-| Duyệt hình và chọn người trực bot | Hai mascot lấy từ poster đang dùng làm ảnh tạm. Chị có thể duyệt cho đợt đầu hoặc giao Design thay asset. Cần chỉ định người giữ cấu hình, máy chạy và bản sao lưu. |
+| Nhiệm vụ mở đợt đầu | Chọn hoạt động, bot nguồn và kênh. Community cần thread đang mở. Poll cần bài đang nhận phiếu. [Danh sách và cấu hình](FEATURES.md) |
+| Luật điểm danh và Voice | Chốt giờ reset, thời lượng Voice, quy tắc AFK/ở một mình và phần thưởng nếu có. Mẫu Lab dùng 00:00 giờ Việt Nam và 120 giây. |
+| Lệnh từ bot ngoài | Xác nhận tiêu chí dùng đúng lệnh và app. Phản hồi công khai đang tải cũng được tính. Riêng Wheat, kết quả này chỉ xác nhận lượt gọi `/tarot`; số lá chưa kiểm chứng. |
+| Rank | Giữ dự phòng cho đến khi `/rank` của Mar Wuỷ trả thẻ thành công và có thể xác minh thẻ của người gọi. [Kết quả thử Rank](QA-2026-11-26.md) |
+| Hình ảnh và vận hành | Duyệt hình tạm hoặc cấp ảnh thay thế. Chỉ định người quản lý máy chạy, cấu hình riêng, sao lưu, lịch lưu dữ liệu và xử lý sự cố. |
 
-## Giao cho người vận hành
+## Tiếp quản
 
-- **Chạy lần đầu.** Làm theo [hướng dẫn cài trên server thử](../README.md#chạy-thử-trong-server-discord-riêng). Mẫu mặc định dùng Voice, emoji và một chủ đề đang mở. Có thể thử đủ 3/3 với một app MarStreak.
-- **Chạy lâu dài.** Dùng [hướng dẫn VPS, sao lưu và khôi phục](VPS.md). Sau khi chị duyệt danh sách nhiệm vụ, thử lại bằng quyền thành viên ở môi trường đích trước khi mở rộng.
-- **Tự chỉnh hoặc giao người sửa code.** Xem chỗ đổi lời bot, hình ảnh, danh sách quest và bảng tự thử. [Hướng dẫn bảo trì](MAINTENANCE.md)
-- **Nghiệm thu vận hành.** Ghi số liệu Voice/Game trước khi mở để có mốc so sánh. Trong tuần beta, theo dõi số người điểm danh mỗi ngày. Người phụ trách VPS theo dõi uptime với mục tiêu trên 99%. Đây là các số liệu cần đo khi chạy thật.
+| Vai trò | Đầu việc |
+| --- | --- |
+| Phát triển | Đổi lời bot, ảnh và nhiệm vụ theo yêu cầu đã duyệt. Chạy regression và kiểm tra Lab trước khi phát hành. [Hướng dẫn phát triển](MAINTENANCE.md) |
+| Vận hành | Cài trên môi trường được cấp quyền, thử bằng quyền thành viên thường, sao lưu và thử khôi phục SQLite. [Cài lần đầu](../README.md#chạy-thử-trong-server-discord-riêng) · [VPS và rollback](VPS.md) |
+| Product | Ghi số liệu Voice/Game trước khi mở. Trong tuần beta, theo dõi số người điểm danh mỗi ngày. Phối hợp với vận hành đo mục tiêu uptime trên 99%. |
 
-Quyền lệnh theo role, trải nghiệm trên điện thoại thật và độ ổn định dài ngày còn cần kiểm tra ở môi trường vận hành. [Tính năng và cách cấu hình](FEATURES.md) · [Cấu trúc SQLite](../src/checkins.js) · [Bộ kiểm thử](../test/)
+Quyền theo role ở server đích, trải nghiệm trên ứng dụng di động và uptime dài ngày còn chờ kiểm tra trước khi xác nhận vận hành chính thức.

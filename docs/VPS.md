@@ -1,6 +1,6 @@
-# Cài MarStreak trên VPS
+# Hướng dẫn vận hành trên VPS
 
-Hướng dẫn cho Ubuntu 24.04 LTS hoặc Debian 12 dùng systemd, với quyền SSH và `sudo`. Bot kết nối ra Discord bằng HTTPS/WebSocket. Dùng một tiến trình cho một app và file SQLite. Trước khi cài, chốt server, người giữ token, người sao lưu và bên quản lý VPS.
+Hướng dẫn cho Ubuntu 24.04 LTS hoặc Debian 12 dùng systemd, với quyền SSH và `sudo`. Bot kết nối ra Discord bằng HTTPS/WebSocket. Dùng một tiến trình cho một app và file SQLite. Trước khi cài đặt, ghi nhận server đích, người quản lý token, người sao lưu và người phụ trách VPS.
 
 ## 1. Chuẩn bị bot Discord
 
@@ -8,7 +8,7 @@ Làm các bước trong [README](../README.md#chạy-thử-trong-server-discord-
 
 ## 2. Cài Node.js 24
 
-Cài công cụ tải và kiểm tra bản Node.js 24 LTS theo kiến trúc VPS. Đoạn này đặt Node ở `/opt/marstreak-node`, khớp đường dẫn trong file systemd.
+Cài công cụ tải và kiểm tra bản Node.js 24 LTS theo kiến trúc VPS. Ví dụ cài Node ở `/opt/marstreak-node`, khớp đường dẫn trong file systemd.
 
 ```bash
 sudo apt-get update
@@ -53,7 +53,7 @@ sudo install -m 640 -o root -g marstreak .env.example /etc/marstreak/marstreak.e
 sudoedit /etc/marstreak/marstreak.env
 ```
 
-Đoạn `install .env.example` dùng ở lần cài đầu. Trong file, điền token và ID của môi trường bạn quản lý, chọn quest theo [bảng tính năng](FEATURES.md) và đặt `CHECKIN_DB_PATH=/var/lib/marstreak/checkins.sqlite`. Dùng `sudoedit` để nhập token tại VPS. Giữ file cấu hình ngoài checkout và quyền đọc giới hạn cho người vận hành.
+Chỉ sao chép `.env.example` khi cài lần đầu để bảo toàn cấu hình hiện có. Trong tệp cấu hình, điền token và ID của môi trường được cấp quyền, chọn quest theo [bảng tính năng](FEATURES.md) và đặt `CHECKIN_DB_PATH=/var/lib/marstreak/checkins.sqlite`. Dùng `sudoedit` để nhập token tại VPS. Giữ file cấu hình ngoài checkout và quyền đọc giới hạn cho người vận hành.
 
 ## 4. Bật dịch vụ và thử
 
@@ -70,7 +70,7 @@ Chờ log **MarStreak sẵn sàng**, rồi gọi `/checkin` và `/quests` trong 
 
 ## 5. Sao lưu, khôi phục và nâng cấp
 
-**Sao lưu** bằng lệnh sau. Bot in đường dẫn file đã qua `quick_check`. Giữ thêm một bản sao ở nơi team có quyền truy cập phù hợp.
+**Sao lưu** bằng lệnh sau. Bot in đường dẫn file đã qua `quick_check`. Giữ thêm một bản sao ở nơi lưu trữ có phân quyền.
 
 ```bash
 sudo -u marstreak /opt/marstreak-node/bin/node --env-file=/etc/marstreak/marstreak.env /opt/marstreak/src/backup.js
@@ -80,7 +80,7 @@ sudo -u marstreak /opt/marstreak-node/bin/node --env-file=/etc/marstreak/marstre
 
 **Nâng cấp.** Ghi SHA đang chạy rồi sao lưu. Dừng dịch vụ, cập nhật checkout bằng `git pull --ff-only` dưới user `marstreak`, chạy lại `npm ci` và `npm test` bằng Node ở trên, rồi bật lại và thử. Nếu cần quay lại, dừng dịch vụ, chuyển về SHA đã ghi, cài đúng dependency của bản đó và kiểm tra dữ liệu trước khi bật.
 
-## Khi demo gặp lỗi
+## Xử lý sự cố
 
 | Triệu chứng | Kiểm tra |
 | --- | --- |
@@ -91,7 +91,7 @@ sudo -u marstreak /opt/marstreak-node/bin/node --env-file=/etc/marstreak/marstre
 | Không nhận DM | Mở `/quests` để xem kết quả đã ghi, kiểm tra cài đặt nhận tin riêng. |
 | Thẻ thiếu ảnh | Kiểm tra các PNG trong `assets/` và dependency Sharp. Hướng dẫn dạng chữ vẫn hiện trong embed. |
 
-Mẫu dịch vụ và quy trình trên dành cho máy vận hành. Kết quả Lab và regression trong repo là cơ sở để nghiệm thu. Kiểm tra VPS thật, lưu bản sao và quyền role tại server nhận bàn giao trước khi mở.
+Trước khi mở cho thành viên, kiểm tra dịch vụ trên VPS đích, thử khôi phục một bản sao và xác nhận quyền theo role. Ghi lại SHA, thời điểm triển khai và người phụ trách.
 
 ## Yêu cầu xóa dữ liệu thành viên
 

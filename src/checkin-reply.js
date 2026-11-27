@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 const thumbnailName = 'marwuy-discord-icon.png';
 const thumbnailPath = fileURLToPath(new URL('../assets/marwuy-discord-icon.png', import.meta.url));
 
-export function makeCheckInReply({ created, streak, quests }) {
+export function makeCheckInReply({ created, day, streak, quests }) {
   const card = new EmbedBuilder()
     .setColor(0xe85e3c)
     .setTitle(created
@@ -15,6 +15,8 @@ export function makeCheckInReply({ created, streak, quests }) {
       : 'Wủy giữ bộ nhiệm vụ hôm nay để bạn làm tiếp nha.')
     .setThumbnail(`attachment://${thumbnailName}`)
     .addFields({ name: 'Chuỗi điểm danh', value: `🔥 **${streak} ngày liên tiếp**` });
+
+  if (day) card.setFooter({ text: 'Ngày điểm danh · ' + day.split('-').reverse().join('/') });
 
   return {
     embeds: [card],
