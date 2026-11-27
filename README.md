@@ -19,7 +19,9 @@ Khi tiếp quản, đọc [Bàn giao](docs/HANDOFF.md) và [Trạng thái tính 
 
 ## Chạy thử trong server Discord riêng
 
-Mở [SETUP](docs/SETUP.md) và làm lần lượt: cài ứng dụng Discord, chuẩn bị kênh, điền token và bốn ID, rồi chạy bằng Node.js 24. Bộ mẫu dùng **Voice 120 giây + thả emoji + gửi tin trong thread**, không cần Message Content Intent. Hướng dẫn có sẵn mẫu `.env`, quyền theo vai trò, kết quả cần thấy và cách xử lý lỗi thường gặp.
+Tải source bằng **Code → Download ZIP** hoặc Git. Tạo **server thử và ứng dụng Discord riêng**, rồi điền token và bốn ID của môi trường đó. Mỗi bản cài tạo SQLite khi chạy lần đầu. Làm theo [hướng dẫn cài từng bước](docs/SETUP.md).
+
+Bộ mẫu dùng **Voice 120 giây, thả emoji và gửi tin trong thread**. Quy trình chạy thử với chính ứng dụng MarStreak vừa tạo và để **Message Content Intent tắt**. [Cấu hình mẫu và các tính năng tùy chọn](docs/FEATURES.md#trạng-thái-tính-năng)
 
 Khi bot báo **MarStreak sẵn sàng**, `/checkin` gửi thẻ điểm danh và bảng ba nhiệm vụ ngay sau đó. Dùng [hướng dẫn thành viên](docs/MEMBER-GUIDE.md) để thử hoặc sao chép phần tin nhắn ghim vào kênh giới thiệu. Chạy một tiến trình cho mỗi ứng dụng và tệp SQLite; xem [Windows](DEMO-KIT/README.md) hoặc [VPS](docs/VPS.md) cho cách vận hành.
 

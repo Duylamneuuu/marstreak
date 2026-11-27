@@ -8,10 +8,10 @@ Chuỗi chỉ phụ thuộc các ngày điểm danh liên tiếp. Điểm danh �
 
 Khi tiếp quản, đọc [Trạng thái tính năng](FEATURES.md#trạng-thái-tính-năng), sau đó dùng [hướng dẫn cài bot](SETUP.md) và [hướng dẫn thành viên](MEMBER-GUIDE.md). Trạng thái mặc định trong repo đi theo `.env.example`. Đọc cấu hình tại môi trường chạy để xác định quest nào đang được giao.
 
-## Demo
+## Tự chạy thử
 
-1. Xem bộ thẻ từ 0/3 đến 3/3 và ví dụ tin nhắn riêng. Có thể mở thư viện ảnh trên máy khi chưa vào Lab. [Demo](demo/README.md)
-2. Trong Discord Lab, chọn `/checkin` của ứng dụng thử, làm một nhiệm vụ và bấm **Xem tiến độ mới**.
+1. Xem bộ thẻ từ 0/3 đến 3/3 và ví dụ tin nhắn riêng. Các ảnh dùng dữ liệu mẫu và mở được từ source đã giải nén. [Demo](demo/README.md)
+2. Tải source, tạo server thử và app Discord riêng, điền token và ID của bản cài rồi chạy bot. Chọn `/checkin` của app vừa tạo, làm một nhiệm vụ và bấm **Xem tiến độ mới**. [Các bước cài từ đầu](SETUP.md)
 3. Đối chiếu hành vi với kết quả kiểm thử. Hai tài khoản đã đạt 3/3 độc lập và giữ tiến độ qua restart ngày 27/11. Ca lệnh tới sát giờ reset có regression riêng trên SQLite local. [Kết quả và giới hạn](QA-2026-11-27.md)
 
 ## Các quyết định cần xác nhận
@@ -19,7 +19,7 @@ Khi tiếp quản, đọc [Trạng thái tính năng](FEATURES.md#trạng-thái-
 | Phạm vi | Quyết định |
 | --- | --- |
 | Nhiệm vụ mở đợt đầu | Chọn hoạt động, bot nguồn và kênh. Community cần thread đang mở. Poll cần bài đang nhận phiếu. [Danh sách và cấu hình](FEATURES.md) |
-| Luật điểm danh và Voice | Chốt giờ reset, thời lượng Voice, quy tắc AFK/ở một mình và phần thưởng nếu có. Mẫu Lab dùng 00:00 giờ Việt Nam và 120 giây. |
+| Luật điểm danh và Voice | Chốt giờ reset, thời lượng Voice, quy tắc AFK/ở một mình và phần thưởng nếu có. Cấu hình mẫu dùng 00:00 giờ Việt Nam và 120 giây. |
 | Lệnh từ bot ngoài | Xác nhận tiêu chí dùng đúng lệnh và app. Phản hồi công khai đang tải cũng được tính. Riêng Wheat, kết quả này chỉ xác nhận lượt gọi `/tarot`; số lá chưa kiểm chứng. |
 | Thông báo | Chọn giữ mặc định im lặng hoặc bật một DM khi đạt 3/3 bằng `QUEST_COMPLETION_DM=true`. Thành viên luôn xem tiến độ qua `/quests` hoặc **Xem tiến độ mới**. |
 | Rank | Giữ dự phòng cho đến khi `/rank` của Mar Wuỷ trả thẻ thành công và có thể xác minh thẻ của người gọi. [Kết quả thử Rank](QA-2026-11-26.md) |

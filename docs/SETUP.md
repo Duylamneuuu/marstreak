@@ -1,29 +1,27 @@
 # Cài MarStreak lần đầu
 
-Hướng dẫn này đưa bot chạy trên một server Discord thử với ba nhiệm vụ: **vào Voice, thả emoji và gửi tin trong chủ đề**. Khi chạy được bộ mẫu, người vận hành có thể đổi danh sách nhiệm vụ theo [bảng cấu hình](FEATURES.md) hoặc chuyển sang [VPS](VPS.md).
+Hướng dẫn cài từ đầu bằng **source của repo, server Discord thử và ứng dụng mới do người cài quản lý**. Bộ mẫu gồm ba nhiệm vụ **vào Voice, thả emoji và gửi tin trong chủ đề**. Sau khi chạy được bộ mẫu, có thể [bật thêm nhiệm vụ](FEATURES.md) hoặc [chạy trên VPS](VPS.md).
 
 ## 1. Chuẩn bị
 
-- Một máy Windows, macOS hoặc Linux có mạng và [Node.js 24](https://nodejs.org/en/download). Mở terminal, chạy `node --version` để kiểm tra.
-- Quyền đọc [repo MarStreak](https://github.com/Duylamneuuu/marstreak), hiện là kho riêng tư. Có thể dùng Git ở bước 4 hoặc đăng nhập GitHub, chọn **Code → Download ZIP**, giải nén rồi mở terminal trong thư mục có `package.json`.
-- Một ứng dụng trong [Discord Developer Portal](https://discord.com/developers/applications) và quyền cài ứng dụng, chuẩn bị kênh trên server thử.
-- Một tài khoản thành viên để dùng thử. Dùng thêm tài khoản thứ hai khi kiểm tra dữ liệu riêng giữa hai người.
+- Một máy Windows, macOS hoặc Linux có mạng. Cài Node.js 24 và mở terminal mới. Kiểm tra bằng `node --version`. [Tải Node.js](https://nodejs.org/en/download)
+- Mở repo và chọn **Code → Download ZIP**, rồi giải nén. Có thể dùng Git để lấy source ở bước 4. [Repo MarStreak](https://github.com/Duylamneuuu/marstreak)
+- Một tài khoản Discord. Trong cột server, bấm **+ → Create My Own**, chọn tên bất kỳ rồi tạo server để thử. Chủ server có quyền cài ứng dụng. [Cách tạo server Discord](https://support.discord.com/hc/en-us/articles/204849977-How-do-I-create-a-server)
 
 Máy chạy bot cần được bật và giữ kết nối. Với cách chạy `npm start` ở bước 5, cần giữ terminal mở và tránh cho máy ngủ; cách chạy lâu dài nằm trong [hướng dẫn VPS](VPS.md).
 
-## 2. Cài ứng dụng vào đúng server
+## 2. Tạo ứng dụng và cài vào server vừa chuẩn bị
 
-Nếu chưa có ứng dụng, chọn **New Application** trong Developer Portal và đặt tên **MarStreak** để khớp hướng dẫn thành viên. Nếu giữ tên ứng dụng khác, thay tên trong tin nhắn ghim và chọn đúng tên đó khi dùng lệnh.
-
-1. Mở ứng dụng trong Developer Portal. Lấy **Application ID** ở **General Information** và token của chính ứng dụng đó ở **Bot**. Với ứng dụng đang vận hành, lấy token từ người quản lý cấu hình; tạo lại token sẽ làm token cũ mất hiệu lực.
-2. Trong **Installation**, bật **Guild Install**, chọn hai scope `bot` và `applications.commands`. Dùng liên kết cài đặt để thêm ứng dụng vào server thử.
-3. Cấp **View Channels** cho bot ở các kênh thử trong bước 3. Quyền ghi đè của từng kênh hoặc danh mục vẫn có thể chặn bot dù role đã được cấp quyền.
+1. Trong Discord Developer Portal, bấm **New Application** và đặt tên dễ nhận ra khi thử lệnh. Tên **MarStreak** khớp với nội dung hướng dẫn thành viên. [Discord Developer Portal](https://discord.com/developers/applications)
+2. Chép **Application ID** từ **General Information**. Trên trang **Bot** của ứng dụng mới, dùng **Reset Token → Copy** để tạo và chép token. Lưu token tại nơi bảo mật để nhập vào `.env` ở bước 4. Tạo lại token trên ứng dụng đang vận hành sẽ làm token cũ mất hiệu lực.
+3. Mở **Installation**, chọn **Guild Install** trong **Installation Contexts** và **Discord Provided Link** trong **Install Link**. Ở **Default Install Settings → Guild Install**, thêm hai scope `bot` và `applications.commands` rồi chọn quyền **View Channels**. Lưu thay đổi.
+4. Mở liên kết cài đặt vừa tạo. Chọn **Add to Server**, chọn server thử rồi **Authorize**. Ứng dụng sẽ xuất hiện trong server và bắt đầu phản hồi sau bước 5. Nếu bot không thấy kênh, kiểm tra quyền ghi đè của kênh và danh mục.
 
 **Không cần Administrator hay bật Message Content Intent.** Mã hiện tại dùng các intent tiêu chuẩn `Guilds`, `GuildVoiceStates`, `GuildMessages`, `GuildMessageReactions`; có thêm `GuildMessagePolls` khi cấu hình Poll. Không yêu cầu Server Members Intent hoặc Presence Intent. Bot quan sát trạng thái Voice, không vào phòng để nghe hoặc phát âm thanh. [Mã khởi động](../src/bot.js) · [Hướng dẫn cài ứng dụng Discord](https://docs.discord.com/developers/quick-start/getting-started)
 
 ## 3. Chuẩn bị nơi làm nhiệm vụ và lấy ID
 
-Trong Discord, bật **User Settings → Advanced → Developer Mode** để có các mục sao chép ID. Chuẩn bị:
+Mở **User Settings** bằng nút bánh răng cạnh avatar Discord. Trong mục **Developer** hoặc **Advanced**, bật **Developer Mode** để hiện các lệnh chép ID. [Cách sao chép ID](https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID)
 
 | Nơi dùng thử | Quyền của bot | Quyền của thành viên |
 | --- | --- | --- |
@@ -32,11 +30,19 @@ Trong Discord, bật **User Settings → Advanced → Developer Mode** để có
 | Một kênh chữ có ít nhất một tin để thả emoji | View Channel | View Channel, Read Message History, Add Reactions |
 | Một thread công khai đang mở trong kênh chữ | View Channel ở kênh chứa thread | View Channel, Send Messages in Threads |
 
-Có thể dùng cùng một kênh chữ cho lệnh, Reaction và nơi tạo thread. Tạo thread **công khai**, giữ mở và không khóa; sao chép ID của **chính thread**, không dùng ID kênh chứa nó. Phòng Voice phải là phòng Voice thông thường, không phải Stage. Bảng trên áp dụng cho bộ mẫu `LAB_REACTION_MODE=any`; Reaction chỉ định và Poll có yêu cầu đọc tin riêng trong [FEATURES](FEATURES.md).
+Có thể dùng một kênh chữ cho cả lệnh và Reaction. Gửi một tin mẫu để thả emoji, rồi chọn **⋯ → Create Thread** trên tin để tạo chủ đề **công khai**, đang mở và không khóa. Sử dụng một phòng Voice thông thường. [Cách tạo thread](https://support.discord.com/hc/en-us/articles/4403205878423-Threads-FAQ)
 
-Lấy **Copy Server ID** ở server, **Copy Channel ID** ở phòng Voice và thread. ID là chuỗi chữ số; không dán tên kênh hoặc đường dẫn Discord vào biến ID. [Cách kiểm tra quyền trong code](../src/native-quests.js) · [Quyền Discord](https://docs.discord.com/developers/topics/permissions)
+| Chép ID bằng menu chuột phải | Biến tương ứng |
+| --- | --- |
+| **Copy Server ID** trên biểu tượng server thử | `DISCORD_GUILD_ID` |
+| **Copy Channel ID** trên phòng Voice | `LAB_VOICE_CHANNEL_IDS` |
+| **Copy Channel ID** trên chính thread dưới kênh chữ | `LAB_COMMUNITY_THREAD_ID` |
+
+ID là chuỗi chữ số. Với biến Community, lấy ID của thread trong danh sách kênh. Bộ mẫu Reaction tự chọn dùng sự kiện thả emoji mới. Quyền cho Reaction chỉ định và Poll nằm trong [bảng tính năng](FEATURES.md).
 
 ## 4. Cài source và điền cấu hình
+
+Nếu tải ZIP, mở terminal trong thư mục đã giải nén có `package.json`.
 
 Nếu dùng Git, tải source bằng:
 
@@ -59,6 +65,7 @@ Sao chép [`.env.example`](../.env.example) thành `.env` **cùng cấp với `p
 ```powershell
 # Windows PowerShell
 Copy-Item .env.example .env
+notepad .env
 ```
 
 ```sh
@@ -74,6 +81,7 @@ DISCORD_APPLICATION_ID=ID_UNG_DUNG
 DISCORD_GUILD_ID=ID_SERVER_THU
 CHECKIN_RESET_TIME=00:00
 CHECKIN_DB_PATH=data/checkins.sqlite
+QUEST_COMPLETION_DM=false
 LAB_VOICE_CHANNEL_IDS=ID_PHONG_VOICE
 LAB_VOICE_SECONDS=120
 LAB_REACTION_MODE=any
@@ -93,7 +101,7 @@ npm start
 
 Chờ dòng **MarStreak sẵn sàng. Đã kiểm tra ID/quyền và đăng ký /checkin, /quests.** Giữ terminal mở. Bot tự đăng ký hai lệnh vào server có ID trong `.env`.
 
-1. Trong Discord, gõ `/checkin` và chọn lệnh của đúng ứng dụng MarStreak vừa cài. Với tài khoản và database mới, bot gửi thẻ điểm danh **streak 1**, rồi bảng **0/3** ngay bên dưới. Hai phản hồi chỉ người gọi thấy.
+1. Trong kênh chữ của server vừa cài bot, gõ `/checkin` và chọn lệnh có tên ứng dụng đã đặt ở bước 2. Với tài khoản và database mới, bot gửi thẻ điểm danh **streak 1**, rồi bảng **0/3** ngay bên dưới. Hai phản hồi chỉ người gọi thấy.
 2. Sau khi nhận bảng, vào phòng Voice được chỉ ra đủ hai phút, thả một emoji mới vào tin trong kênh bot nhìn thấy, rồi gửi một tin trong thread được dẫn. Làm theo thứ tự bất kỳ. Bộ mẫu không bắt buộc một emoji cụ thể.
 3. Bấm **Xem tiến độ mới** hoặc gọi `/quests` để thấy từng nhiệm vụ được đánh dấu đến **3/3**. Bảng đã mở không tự cập nhật. Mặc định bot giữ im lặng khi ghi nhận quest. Để gửi một tin riêng khi đạt **3/3**, đặt `QUEST_COMPLETION_DM=true` rồi khởi động lại bot.
 4. Bấm **Cách làm nhiệm vụ** để mở hướng dẫn riêng ngay trong Discord. Nút này chỉ giải thích cách làm; kiểm tra rằng bấm nút không thay đổi điểm danh hoặc tiến độ.

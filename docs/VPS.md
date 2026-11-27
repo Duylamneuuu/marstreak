@@ -4,7 +4,7 @@ Hướng dẫn cho Ubuntu 24.04 LTS hoặc Debian 12 dùng systemd, với quyề
 
 ## 1. Chuẩn bị bot Discord
 
-Làm các bước trong [README](../README.md#chạy-thử-trong-server-discord-riêng) để cài ứng dụng và lấy Application ID, server ID và các ID cần thiết. Dùng một server thử để kiểm chứng luồng trước ngày mở cho thành viên. [Discord App Quick Start](https://docs.discord.com/developers/quick-start/getting-started)
+Dùng một server thử để kiểm chứng trước khi mở cho thành viên. Tạo ứng dụng, cài vào server đó và lấy Application ID, server ID, ID phòng Voice và ID thread. [Hướng dẫn tạo server và ứng dụng](SETUP.md) · [Discord App Quick Start](https://docs.discord.com/developers/quick-start/getting-started)
 
 ## 2. Cài Node.js 24
 

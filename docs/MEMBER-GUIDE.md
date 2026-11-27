@@ -2,7 +2,7 @@
 
 ## Tin nhắn có thể ghim trên Discord
 
-Sao chép phần dưới để thành viên đọc ngay trong server:
+Sao chép phần dưới để ghim trong server. Nếu ứng dụng có tên hiển thị khác, thay “MarStreak” trong tin nhắn bằng đúng tên đó để thành viên dễ chọn lệnh.
 
 ```text
 🌱 Mỗi ngày ghé MarStreak một chút nha!

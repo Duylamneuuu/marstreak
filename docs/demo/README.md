@@ -12,4 +12,4 @@ Mặc định thành viên xem tiến độ bằng `/quests` hoặc **Xem tiến
 
 Các ảnh minh họa dùng dữ liệu mẫu. Nhân vật tai dài và nhân vật đầu tròn tạm lấy từ poster “Người thầy có thể đến từ nhiều nơi”, có chỉnh lại nét nhân vật bằng AI. Nền rừng cắt từ poster “Điều ở lại không chỉ là kiến thức” (vùng 270 × 500 px tại x=810, y=0). Cả hai poster thuộc bộ tham chiếu Lab ngày 21/11. Nội dung, thanh tiến độ và biểu tượng hoàn thành được dựng bằng code. [Tài sản](../../assets/) · [Bộ dựng ảnh](../../src/quest-visual.js)
 
-Sau khi tải repo, mở `docs/demo/DEMO.html` để xem ngoại tuyến. Khi xem trên GitHub, dùng bảng ảnh phía trên. [Trang HTML](DEMO.html) · [Chạy thử trên Discord](../../README.md#chạy-thử-trong-server-discord-riêng) · [Hồ sơ bàn giao](../HANDOFF.md)
+Sau khi tải repo, mở `docs/demo/DEMO.html` để xem ngoại tuyến. Khi xem trên GitHub, dùng bảng ảnh phía trên. Để chạy tương tác thật, tạo server thử và app Discord riêng theo hướng dẫn cài. [Trang HTML](DEMO.html) · [Cài và chạy thử trên Discord](../SETUP.md) · [Hồ sơ bàn giao](../HANDOFF.md)
