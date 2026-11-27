@@ -17,15 +17,35 @@ Dùng ứng dụng Discord của Lab và SQLite riêng khi thử thay đổi. Xe
 
 Nút **Cách làm nhiệm vụ** trả hướng dẫn riêng, không đọc hoặc ghi SQLite, không giao nhiệm vụ và không tra cứu bot nguồn. Nút **Xem tiến độ mới** tiếp tục dùng luồng `/quests` để lấy trạng thái hiện tại. Khi đổi nội dung trợ giúp, giữ giới hạn độ dài embed và kiểm tra cùng các nút trong [test hiển thị](../test/quest-visual.test.js).
 
-## Thêm một nhiệm vụ từ bot khác
+## Thêm nhiệm vụ mới
 
-Lấy `wheat-coinflip` làm mẫu. Trong Lab, kiểm tra tài khoản thành viên chọn được đúng app và lệnh, và Discord trả lời công khai. Đối chiếu gói `MESSAGE_CREATE` của bot quan sát để có App ID, ID tài khoản bot, tên lệnh và người gọi. Nếu App ID và ID bot khác nhau, khai báo cả hai như ví dụ Dyno.
+### Bật lệnh đã hỗ trợ
 
-1. Thêm mã quest, tên hiển thị và nhãn ngắn nếu cần. Trong [danh sách lệnh bot ngoài](../src/integrations/lab-command-quests.js), đăng ký lệnh với `createSlashCommandQuest` và khai báo nhóm kênh trong `commandQuestChannels`. Dùng `option` để nêu thao tác bắt buộc sau khi chọn lệnh, nếu có.
-2. Thêm biến kênh vào [mẫu cấu hình](../.env.example) và điền giá trị thật trong Lab. Ví dụ đã có `LAB_WHEAT_COINFLIP_CHANNEL_ID`, mã `wheat-coinflip`, lệnh `coinflip` và app Wheat. Bộ xác minh dùng thông tin định danh do Discord cung cấp, kể cả phản hồi công khai đang tải.
-3. Thêm ca đúng người, sai app dù trùng tên lệnh, sai kênh, phản hồi riêng, lệnh gọi trước khi nhận việc và sự kiện lặp trong [test xác minh lệnh](../test/slash-command-quests.test.js). Sau khi chạy test, chọn ít nhất ba mã cho `LAB_QUEST_POOL` của Lab rồi thử đúng lệnh trên Discord.
+Nếu lệnh có trong [danh sách bot ngoài](FEATURES.md#nhiệm-vụ-từ-bot-khác), người vận hành có thể bật bằng cấu hình. Ví dụ, để thêm **Wheat `/coinflip`** vào bộ mẫu:
 
-Dyno đang chạy qua bộ xác minh chung. [Bộ đọc nội dung Dyno cũ](../src/integrations/dyno-roll.js) chỉ để tham khảo.
+1. Cài đúng app Wheat trong server thử. Dùng quyền thành viên thường để chọn lệnh tại kênh đích và thử phản hồi công khai.
+2. Điền ID kênh chữ vào `LAB_WHEAT_COINFLIP_CHANNEL_ID` trong `.env`, rồi thêm `wheat-coinflip`. Với bộ mẫu, dòng cấu hình sẽ là `LAB_QUEST_POOL=voice,reaction,community,wheat-coinflip`.
+3. Khởi động lại cùng SQLite. Dùng một tài khoản chưa nhận bộ hôm nay hoặc SQLite thử riêng để xem lượt giao mới. Nếu cần chắc chắn quest mới xuất hiện, cấu hình đúng ba quest khả dụng trong lượt thử riêng đó. Bộ đã giao giữ nguyên trong ngày.
+
+### Đăng ký lệnh bot chưa hỗ trợ
+
+Có thể dùng chung `createSlashCommandQuest` cho nhiều bot nếu tiêu chí chỉ là **thành viên gọi đúng lệnh của đúng app**. Trước khi sửa code, dùng quyền thành viên thường gọi lệnh trong Lab và quan sát bằng tiến trình bot thử với **Message Content Intent tắt**. Kiểm tra sự kiện `MESSAGE_CREATE` của **phản hồi công khai ban đầu** có ID ứng dụng, ID tài khoản bot gửi, tên lệnh, ID người gọi, kênh và ID tin. Tin đang tải vẫn có thể là bằng chứng lượt gọi nếu đủ metadata. Chỉ ghi lại các trường cần đối chiếu trong báo cáo thử. [Bộ xác minh chung](../src/integrations/slash-command-quest.js)
+
+| Quan sát trong Lab | Cách xử lý |
+| --- | --- |
+| Phản hồi công khai có đủ metadata và tên lệnh khớp | Đăng ký quest bằng bộ xác minh chung. Hai app cùng có `/coinflip` được phân biệt bằng ID ứng dụng và tài khoản bot gửi. |
+| Chỉ có phản hồi riêng, DM, bot im lặng hoặc sự kiện thiếu metadata | Giữ ngoài danh sách giao. Tìm tín hiệu khác từ app nguồn nếu muốn triển khai. |
+| Quest yêu cầu một tham số hoặc kết quả, như Tarot đúng một lá hay hoàn thành một ván | Cần bằng chứng riêng cho tham số hoặc kết quả, ví dụ API hoặc sự kiện do app nguồn cung cấp. Metadata lượt gọi xác nhận người dùng đã gọi lệnh. |
+
+1. Trong [danh sách lệnh bot ngoài](../src/integrations/lab-command-quests.js), tạo mã quest duy nhất và đăng ký bằng `createSlashCommandQuest`. Khai báo tên app, `appId`, tên lệnh không có dấu `/`, server và kênh cấu hình. Thêm `authorId` nếu ID tài khoản bot gửi khác App ID, như Dyno. Dùng `option` để chỉ thao tác cần làm trước khi gửi lệnh.
+2. Thêm mã vào nhóm kênh tương ứng trong `commandQuestChannels`. Nếu cần kênh riêng, thêm nhóm và biến mới vào [`.env.example`](../.env.example). Cập nhật tên hiển thị và nhãn ngắn trong [`quest-names.js`](../src/quest-names.js), rồi thêm cách làm vào [hướng dẫn thành viên](MEMBER-GUIDE.md).
+3. Thêm test cho đúng người, sai app dù trùng tên lệnh, sai lệnh, sai kênh, phản hồi riêng, lệnh trước khi nhận quest và sự kiện lặp. Chạy `npm test`, rồi bật mã mới trong `LAB_QUEST_POOL` của Lab và kiểm tra một lượt thật từ `/checkin` đến dấu tick trong `/quests`. Ghi riêng kết quả local và Discord Lab. [Test xác minh lệnh](../test/slash-command-quests.test.js)
+
+Dyno đang dùng bộ xác minh chung. [Bộ đọc nội dung Dyno cũ](../src/integrations/dyno-roll.js) chỉ để tham khảo.
+
+### Thêm hoạt động không qua slash command
+
+Xác định sự kiện chứng minh người dùng đã làm việc đó. Reaction dùng lượt thả emoji mới, Community dùng sự kiện gửi tin trong thread và Poll dùng sự kiện bỏ phiếu. Nếu thêm hoạt động khác, dùng [các quest gốc](../src/native-quests.js) hoặc [Poll](../src/poll-quest.js) làm mẫu cho điều kiện giao, hướng dẫn và xác minh. Nối sự kiện vào [luồng xử lý](../src/bot.js) để dùng chung ngày reset, điều kiện đã nhận quest và chống ghi nhận trùng trong [pool](../src/quest-pool.js).
 
 ## Bảng thao tác thử lại
 

@@ -13,6 +13,7 @@ Khi tiếp quản, đọc [Bàn giao](docs/HANDOFF.md) và [Trạng thái tính 
 | Xem sản phẩm | [Demo 0/3 đến 3/3](docs/demo/README.md) · [Kết quả kiểm thử](docs/QA-2026-11-27.md) |
 | Duyệt phạm vi và phân công | [Hồ sơ bàn giao](docs/HANDOFF.md) |
 | Cấu hình danh sách nhiệm vụ và quyền | [Tính năng và cấu hình](docs/FEATURES.md) |
+| Bật quest có sẵn hoặc thêm lệnh của bot khác | [Cách thêm nhiệm vụ mới](docs/MAINTENANCE.md#thêm-nhiệm-vụ-mới) |
 | Đổi lời bot, hình ảnh hoặc cách chấm | [Hướng dẫn phát triển](docs/MAINTENANCE.md) |
 | Chạy bot, sao lưu và khôi phục | [Demo Kit cho Windows](DEMO-KIT/README.md) · [Vận hành trên VPS](docs/VPS.md) |
 

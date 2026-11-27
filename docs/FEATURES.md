@@ -12,7 +12,7 @@ Trạng thái dưới đây áp dụng cho bản cài từ [`.env.example`](../.
 | Voice, Reaction và Community | Nằm trong bộ ba mẫu. Reaction thu nhận emoji mới trên tin bot thấy. Community dùng một thread công khai được chỉ định. | Cấu hình phòng Voice và thread. Có thể giới hạn Reaction vào một tin và emoji cụ thể hoặc tạm ngừng giao Community. [Cấu hình](#cấu-hình-voice-reaction-community-và-poll) |
 | DM hoàn thành | Tắt. Bot lưu tiến độ và thành viên tự mở lại bảng để xem. | `QUEST_COMPLETION_DM=true` gửi một tin riêng tại 3/3 cho người hoàn thành. Khởi động lại để áp dụng. |
 | Poll Discord | Có mã, nằm ngoài danh sách mẫu. | Cần bài Poll còn nhận phiếu, link và giờ đóng. Thêm `poll` sau khi thử quyền ở kênh đích. [Cấu hình](#cấu-hình-voice-reaction-community-và-poll) |
-| Wheat, Zodiac, Dyno và AsterieBot | Có 9 quest đã cấu hình được, nằm ngoài danh sách mẫu. | Cài đúng app, thử lệnh có phản hồi công khai, điền ID kênh và thêm từng mã đã xác minh vào danh sách giao. [Danh sách lệnh](#nhiệm-vụ-từ-bot-khác) |
+| Wheat, Zodiac, Dyno và AsterieBot | Có 9 quest đã cấu hình được, nằm ngoài danh sách mẫu. | Cài đúng app, thử lệnh có phản hồi công khai, điền ID kênh và thêm từng mã đã xác minh vào danh sách giao. [Danh sách lệnh](#nhiệm-vụ-từ-bot-khác) · [Cách thêm quest mới](MAINTENANCE.md#thêm-nhiệm-vụ-mới) |
 | `/rank` của Mar Wuỷ | Có mã dự phòng, chưa đăng ký vào danh sách quest. | Cần thẻ hạng công khai và cách xác minh thẻ thuộc người gọi. Hiện chưa có cấu hình để bật Rank. [Kết quả khảo sát](QA-2026-11-26.md#xem-hạng-với-mar-wuỷ) · [Mã nguồn](../src/integrations/marwuy-rank.js) |
 
 ## Quyền và dữ liệu dùng để tính quest
