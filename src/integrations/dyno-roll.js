@@ -1,3 +1,5 @@
+// Historical content-based verifier. The live Dyno /roll quest is registered
+// in lab-command-quests.js and uses slash-command-quest.js.
 import { ChannelType, InteractionType, MessageFlags, PermissionFlagsBits } from 'discord.js';
 
 const dynoAppId = '161660517914509312';

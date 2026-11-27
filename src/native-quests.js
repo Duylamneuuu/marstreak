@@ -1,3 +1,4 @@
+import { questNames } from './quest-names.js';
 import { ChannelType, MessageType, PermissionFlagsBits } from 'discord.js';
 import { voiceProgress } from './voice-quests.js';
 
@@ -22,7 +23,8 @@ function communityProof(config, message) {
     || message.author.bot || message.webhookId || message.system
     || message.channel.archived || message.channel.locked
     || ![MessageType.Default, MessageType.Reply].includes(message.type)) return null;
-  return { userId: message.author.id, at: new Date(message.createdTimestamp) };
+  const at = new Date(message.createdTimestamp);
+  return { userId: message.author.id, at, startedAt: at };
 }
 
 export function createNativeQuests(config) {
@@ -31,8 +33,9 @@ export function createNativeQuests(config) {
   const guildLink = 'https://discord.com/channels/' + config.guildId + '/';
   const threadLink = guildLink + config.threadId;
   const reactionTarget = config.reactionTarget;
-  const canJoin = (room, member) => room?.type === ChannelType.GuildVoice
-    && hasPermissions(room, member, [view, PermissionFlagsBits.Connect]);
+  const canJoin = (room, context) => room?.type === ChannelType.GuildVoice
+    && hasPermissions(room, context.botMember, view)
+    && hasPermissions(room, context.member, [view, PermissionFlagsBits.Connect]);
 
   function reactionRoom(context) {
     if (!context?.botMember) return undefined;
@@ -47,11 +50,11 @@ export function createNativeQuests(config) {
   return [
     {
       kind: 'voice',
-      name: 'Vào phòng Voice',
+      name: questNames['voice'].name,
       defaultEnabled: true,
-      eligible: ({ channels, member }) => config.voiceIds.some(id => canJoin(channels.get(id), member)),
+      eligible: context => config.voiceIds.some(id => canJoin(context.channels.get(id), context)),
       instruction: (assignment, context) => {
-        const rooms = config.voiceIds.filter(id => !context || canJoin(context.channels.get(id), context.member));
+        const rooms = config.voiceIds.filter(id => !context || canJoin(context.channels.get(id), context));
         if (!rooms.length) return 'Chưa có phòng Voice bạn vào được. Nhờ quản trị viên kiểm tra quyền nha.';
         const links = rooms.map(id => '<#' + id + '>').join(', ');
         return 'Ở trong ' + (rooms.length === 1 ? links : 'một trong các phòng ' + links)
@@ -60,14 +63,14 @@ export function createNativeQuests(config) {
     },
     {
       kind: 'reaction',
-      name: 'Thả emoji',
+      name: questNames['reaction'].name,
       defaultEnabled: true,
       eligible: context => {
         if (!reactionTarget) return Boolean(reactionRoom(context));
-        const { channels, member } = context;
+        const { channels, member, botMember, reactionMessage: message } = context;
         const room = channels.get(reactionTarget.channelId);
-        const message = room?.messages?.cache.get(reactionTarget.messageId);
         return room?.type === ChannelType.GuildText && Boolean(message)
+          && hasPermissions(room, botMember, [view, PermissionFlagsBits.ReadMessageHistory])
           && hasPermissions(room, member, [view, PermissionFlagsBits.ReadMessageHistory])
           && (hasPermissions(room, member, PermissionFlagsBits.AddReactions)
             || message.reactions.cache.has(reactionTarget.emoji));
@@ -81,15 +84,16 @@ export function createNativeQuests(config) {
         const emoji = /^\d{17,20}$/.test(reactionTarget.emoji) ? 'emoji đã chọn' : reactionTarget.emoji;
         return 'Thả ' + emoji + ' vào [tin nhắn này](<' + link + '>).';
       },
-      verify: (packet, observedAt) => reactionProof(config, packet, observedAt),
+      verify: (packet, observedAt) => config.reactionUnavailable ? null : reactionProof(config, packet, observedAt),
     },
     {
       kind: 'community',
-      name: 'Gửi tin trong chủ đề',
+      name: questNames['community'].name,
       defaultEnabled: true,
-      eligible: ({ channels, member }) => {
+      eligible: ({ channels, member, botMember }) => {
         const thread = channels.get(config.threadId);
         return thread?.type === ChannelType.PublicThread && !thread.archived && !thread.locked
+          && hasPermissions(thread, botMember, view)
           && hasPermissions(thread, member, [view, PermissionFlagsBits.SendMessagesInThreads]);
       },
       instruction: () => config.threadId ? 'Gửi một tin trong [chủ đề này](<' + threadLink + '>).'

@@ -186,3 +186,35 @@ test('Reaction chỉ gợi ý phòng cả thành viên và bot cùng nhìn thấ
   assert.ok(!quest.eligibleKinds(context).includes('reaction'));
   assert.ok(!quest.eligibleKinds({...context, channels:new Map()}).includes('reaction'));
 });
+
+test('only offers targeted Reaction while both people can see the fetched message', () => {
+  const channelId = 'sample';
+  const target = { channelId, messageId: 'post', emoji: '⭐' };
+  const pool = createQuestPool(createNativeQuests({ ...config, reactionTarget: target }));
+  const botMember = { denied: new Set() };
+  const context = { channels: targets(), member: { denied: new Set() }, botMember };
+  assert.deepEqual(pool.eligibleKinds(context), ['voice', 'community']);
+  context.reactionMessage = { id: target.messageId, reactions: { cache: new Map() } };
+  assert.deepEqual(pool.eligibleKinds(context), ['voice', 'reaction', 'community']);
+  botMember.denied.add(Permissions.ViewChannel);
+  assert.deepEqual(pool.eligibleKinds(context), []);
+});
+
+test('a replayed reaction can finish an existing quest but cannot satisfy a later assignment or day', t => {
+  const store = openCheckInStore(':memory:');
+  t.after(() => store.close());
+  const pool = nativePool();
+  const kinds = ['voice', 'reaction', 'community'];
+  const outage = new Date(+at + 10);
+  const receivedAt = new Date(+at + 20);
+  const day = store.currentDay(at);
+  store.recordCheckIn('lab', 'a', at, kinds);
+  store.recordCheckIn('lab', 'b', at, []);
+  store.questsAfterCheckIn('lab', 'b', new Date(+outage + 1), kinds);
+  assert.equal(pool.completeFromEvent(store, 'lab', 'reaction', reaction('b'), receivedAt, outage), null);
+  assert.deepEqual(pool.completeFromEvent(store, 'lab', 'reaction', reaction('a'), receivedAt, outage), { userId: 'a', day });
+  assert.equal(pool.completeFromEvent(store, 'lab', 'reaction', reaction('a'), receivedAt, outage), null);
+  const tomorrow = new Date('2026-11-24T06:00:00Z');
+  store.recordCheckIn('lab', 'a', tomorrow, kinds);
+  assert.equal(pool.completeFromEvent(store, 'lab', 'reaction', reaction('a'), tomorrow, outage), null);
+});

@@ -125,6 +125,24 @@ test('Wheat accepts /tarot from its app without needing spread and rejects the s
   assert.equal(quest.verify(packet, observedAt), null);
 });
 
+test('Wheat replay uses the call timestamp and still credits an assigned, retired quest just once', t => {
+  const store = openCheckInStore(':memory:');
+  t.after(() => store.close());
+  const wheat = createWheatTarotQuest({ guildId: config.guildId, wheatTarotChannel: config.zodiacLikesChannel });
+  const packet = invocation(userA, 'tarot');
+  const wheatId = '786234973308715008';
+  Object.assign(packet.d, { application_id: wheatId, webhook_id: wheatId, author: { id: wheatId, bot: true } });
+  const others = ['voice', 'community', 'reaction'];
+  const pool = createQuestPool([...others.map(kind => ({ kind, defaultEnabled: true, eligible: () => true })), wheat]);
+  const { day } = store.recordCheckIn(config.guildId, userA, checkInAt, [wheat.kind, 'voice', 'reaction']);
+  const disconnectedAt = new Date(+checkInAt + 1200);
+  assert.deepEqual(pool.completeFromEvent(store, config.guildId, wheat.kind, packet, observedAt, disconnectedAt), { userId: userA, day });
+  assert.equal(pool.completeFromEvent(store, config.guildId, wheat.kind, packet, observedAt, disconnectedAt), null);
+  const nextDay = new Date(+observedAt + 86_400_000);
+  store.recordCheckIn(config.guildId, userA, nextDay, [wheat.kind, 'voice', 'reaction']);
+  assert.equal(pool.completeFromEvent(store, config.guildId, wheat.kind, packet, nextDay, disconnectedAt), null);
+});
+
 const rankSource = {
   guildId: '100000000000000011', channelId: '100000000000000012',
   appId: '100000000000000013', authorId: '100000000000000014',

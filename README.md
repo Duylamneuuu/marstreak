@@ -2,13 +2,14 @@
 
 Bot Discord giúp thành viên điểm danh, giữ chuỗi ngày và làm ba nhiệm vụ hằng ngày. Dùng `/checkin` để nhận việc, `/quests` để xem cách làm và tiến độ. Bot tự ghi nhận hành động và có thể báo hoàn thành qua tin nhắn riêng.
 
-**Chị Cún xem demo:** mở [bộ thẻ ngay trên GitHub](docs/demo/README.md), rồi xem [kết quả hai tài khoản thật](docs/QA-2026-11-26.md). Để chốt bản chạy đầu tiên và giao người cài đặt, dùng [trang bàn giao](docs/HANDOFF.md).
+**Chị Cún xem demo:** mở [bộ thẻ ngay trên GitHub](docs/demo/README.md), rồi xem [kết quả hai tài khoản thật](docs/QA-2026-11-27.md). Để chốt bản chạy đầu tiên và giao người cài đặt, dùng [trang bàn giao](docs/HANDOFF.md).
 
 | Bạn muốn | Mở tài liệu |
 | --- | --- |
 | Xem demo trong 5 phút | [Demo và năm ảnh mẫu](docs/demo/README.md) |
 | Bàn giao cho Lead hoặc cho AI đọc | [Tóm tắt bàn giao DC1](docs/HANDOFF.md) |
 | Xem các quest và cách bật lại tính năng dự phòng | [Tính năng và cấu hình](docs/FEATURES.md) |
+| Đổi lời bot, hình, cách chấm hoặc thêm nhiệm vụ | [Muốn sửa gì thì mở đâu?](docs/MAINTENANCE.md) |
 | Cài bot chạy lâu dài, sao lưu và xử lý sự cố | [Cài trên VPS bằng systemd](docs/VPS.md) |
 
 ## Chạy thử trong server Discord riêng

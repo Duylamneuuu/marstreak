@@ -1,24 +1,13 @@
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { AttachmentBuilder, EmbedBuilder } from 'discord.js';
+import { questNames } from './quest-names.js';
 import { voiceProgress } from './voice-quests.js';
 
 const guide = fileURLToPath(new URL('../assets/quest-guide-temp.png', import.meta.url));
 const celebration = fileURLToPath(new URL('../assets/quest-celebration-temp.png', import.meta.url));
 const forest = fileURLToPath(new URL('../assets/forest-poster-crop-temp.png', import.meta.url));
 const cache = new Map();
-const labels = {
-  voice: 'VÀO VOICE', reaction: 'THẢ EMOJI', community: 'GỬI TIN CHỦ ĐỀ', poll: 'BÌNH CHỌN',
-  'dyno-roll': 'XÚC XẮC CÙNG DYNO',
-  'zodiac-likes': 'SỞ THÍCH THEO CUNG',
-  'zodiac-compatibility': 'SO ĐỘ HỢP HAI CUNG',
-  'zodiac-crystal': 'HỎI QUẢ CẦU PHA LÊ',
-  'zodiac-coinflip': 'TUNG XU VỚI ZODIAC',
-  'wheat-tarot': 'TAROT CÙNG WHEAT',
-  'wheat-coinflip': 'TUNG XU VỚI WHEAT',
-  'asterie-astrology': 'TỬ VI CÙNG ASTERIE',
-  'asterie-astromeme': 'MEME CUNG HOÀNG ĐẠO',
-};
 
 function escapeXml(value) {
   return String(value).replace(/[&<>"']/g, character => ({
@@ -26,10 +15,15 @@ function escapeXml(value) {
   })[character]);
 }
 
+function labelFor(kind) {
+  const copy = questNames[kind];
+  return copy?.shortLabel ?? copy?.name.toUpperCase();
+}
+
 function notificationLayout(quests, completedKind) {
   const count = quests.filter(quest => quest.completed_at).length;
   const title = count === 3 ? 'XONG CẢ BA VIỆC!' : 'XONG THÊM MỘT VIỆC!';
-  const label = labels[completedKind] ?? 'NHIỆM VỤ HÔM NAY';
+  const label = labelFor(completedKind) ?? 'NHIỆM VỤ HÔM NAY';
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="460">
     <rect x="38" y="42" width="636" height="376" rx="24" fill="#fff3ce" stroke="#965e26" stroke-width="12"/>
     <g font-family="Be Vietnam Pro,Arial,sans-serif" font-weight="bold">
@@ -56,7 +50,7 @@ function layout(quests, voiceSeconds) {
       <rect x="77" y="${y - 33}" width="570" height="66" rx="33" fill="#fff8e4" stroke="#d0a45c" stroke-width="3"/>
       <circle cx="111" cy="${y - 1}" r="23" fill="${done ? '#456627' : '#fff8e4'}" stroke="#6c7848" stroke-width="3"/>
       ${done ? `<path d="M102 ${y - 1} l7 7 l13 -16" fill="none" stroke="#fff8e4" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
-      <text x="146" y="${y + 8}" class="quest">${escapeXml(labels[quest.kind] ?? 'NHIỆM VỤ')}</text>
+      <text x="146" y="${y + 8}" class="quest">${escapeXml(labelFor(quest.kind) ?? 'NHIỆM VỤ')}</text>
       ${detail ? `<text x="624" y="${y + 8}" text-anchor="end" class="detail">${escapeXml(detail)}</text>` : ''}`;
   }).join('');
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="${height}" viewBox="0 0 1000 ${height}">

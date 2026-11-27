@@ -1,0 +1,15 @@
+export const questNames = {
+  'voice': { name: 'Vào phòng Voice', shortLabel: 'VÀO VOICE' },
+  'reaction': { name: 'Thả emoji' },
+  'community': { name: 'Gửi tin trong chủ đề', shortLabel: 'GỬI TIN CHỦ ĐỀ' },
+  'poll': { name: 'Bình chọn' },
+  'dyno-roll': { name: 'Tung xúc xắc cùng Dyno', shortLabel: 'XÚC XẮC CÙNG DYNO' },
+  'zodiac-likes': { name: 'Xem sở thích của một cung', shortLabel: 'SỞ THÍCH THEO CUNG' },
+  'zodiac-compatibility': { name: 'So độ hợp hai cung' },
+  'zodiac-crystal': { name: 'Hỏi quả cầu pha lê' },
+  'zodiac-coinflip': { name: 'Tung xu cùng Zodiac', shortLabel: 'TUNG XU VỚI ZODIAC' },
+  'wheat-tarot': { name: 'Tarot cùng Wheat' },
+  'wheat-coinflip': { name: 'Tung xu cùng Wheat', shortLabel: 'TUNG XU VỚI WHEAT' },
+  'asterie-astrology': { name: 'Xem tử vi cùng Asterie', shortLabel: 'TỬ VI CÙNG ASTERIE' },
+  'asterie-astromeme': { name: 'Xem meme cung hoàng đạo', shortLabel: 'MEME CUNG HOÀNG ĐẠO' },
+};

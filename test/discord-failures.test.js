@@ -2,8 +2,9 @@ import assert from 'node:assert/strict';
 import { ChannelType } from 'discord.js';
 import { test } from 'node:test';
 import { openCheckInStore } from '../src/checkins.js';
-import { verifyTargets } from '../src/lab-targets.js';
+import { createQuestBotReader, createReactionTargetReader, verifyTargets } from '../src/lab-targets.js';
 import { deliverQuestUpdate } from '../src/quest-notification.js';
+import { trackVoice } from '../src/voice-quests.js';
 
 const cfg = {
   threadId: 'thread', voiceIds: ['voice'],
@@ -74,4 +75,63 @@ test('DM đợi lượt trước, lỗi gửi không chặn lượt sau hay ngư
   await assert.rejects(first, /DM/);
   await second;
   assert.deepEqual(order, ['b', 1, 2]);
+});
+
+test('preflight ignores deleted Voice and Wheat destinations when those quests are disabled', async () => {
+  const guild = discordGuild();
+  const visited = [];
+  guild.channels.fetch = async id => {
+    visited.push(id);
+    return guild.targets[id];
+  };
+  await verifyTargets(guild, { ...cfg, questKinds: 'community,reaction,poll',
+    voiceIds: ['deleted-room'], wheatTarotChannel: 'deleted-wheat-channel' });
+  assert.deepEqual(visited, ['thread']);
+});
+
+test('fetches the exact reaction message without cache and retries after a deletion or failure', async () => {
+  const post = { reactions: { cache: new Map() } };
+  const read = createReactionTargetReader({ messageId: 'target' });
+  let requests = 0;
+  const room = { messages: { fetch: async options => {
+    assert.deepEqual(options, { message: 'target', force: true, cache: false });
+    if (++requests === 2) throw new Error('Unknown Message');
+    return post;
+  } } };
+  assert.deepEqual(await Promise.all([read(room), read(room)]), [post, post]);
+  assert.equal(requests, 1);
+  assert.equal(await read(room), null);
+  assert.equal(await read(room), post);
+});
+
+test('source bot lookup refreshes Discord roles and does not reuse a departed member', async () => {
+  const bot = { user: { bot: true } };
+  let calls = 0;
+  const guild = { members: { fetch: async options => {
+    assert.deepEqual(options, { user: 'source', force: true });
+    if (++calls === 2) throw new Error('Unknown Member');
+    return bot;
+  } } };
+  const read = createQuestBotReader(['source']);
+  const [a, b] = await Promise.all([read(guild), read(guild)]);
+  assert.equal(a.get('source'), bot);
+  assert.equal(b, a);
+  assert.equal((await read(guild)).get('source'), null);
+});
+
+test('failed SQLite checkpoint on Voice leave cannot carry that session into a later tick', () => {
+  const intervals = [];
+  const store = {
+    currentDay: () => 'today',
+    addVoiceTime: () => { throw new Error('SQLite unavailable'); },
+    addVoiceBatch: (_guild, _day, entries) => { intervals.push(...entries); return []; },
+  };
+  const voice = trackVoice(store, 'lab', () => assert.fail('Unexpected credit'), 10_000);
+  voice.update('a', true, 0);
+  assert.throws(() => voice.update('a', false, 4_000), /SQLite/);
+  voice.tick(10_000);
+  assert.deepEqual(intervals, []);
+  voice.update('a', true, 11_000);
+  voice.tick(13_000);
+  assert.deepEqual(intervals, [{ userId: 'a', elapsed: 2_000 }]);
 });

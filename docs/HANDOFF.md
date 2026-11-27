@@ -1,11 +1,11 @@
-# Bàn giao MarStreak · 26/11/2026
+# Bàn giao MarStreak · 27/11/2026
 
 Chị Cún có thể duyệt bản Lab ngay trên GitHub. Thành viên gõ `/checkin` để giữ chuỗi và nhận ba việc trong ngày. Mở `/quests` để xem còn việc gì và cần làm ở đâu.
 
 ## Xem trong 5 phút
 
 1. Mở [bộ ảnh demo](demo/README.md). Thẻ 0/3 là lúc vừa điểm danh. Thẻ 3/3 và tin nhắn riêng cho thấy thành viên sẽ nhận được gì khi làm xong.
-2. Đọc [kết quả thử thật trên hai tài khoản](QA-2026-11-26.md). Cả hai đạt 3/3 độc lập. Sau khi bot khởi động lại, hai người vẫn thấy đúng bộ nhiệm vụ của mình. Bộ test tự động đạt **41/41**.
+2. Đọc [kết quả thử thật trên hai tài khoản](QA-2026-11-27.md). Cả hai đạt 3/3 độc lập và giữ đúng bộ nhiệm vụ sau restart. Người đã nhận Asterie vẫn làm xong sau khi đổi danh sách giao. Bộ test tự động đạt **50/50**.
 3. Nếu muốn tự chơi, nhờ người vận hành mở bot Lab. Trong Discord, chọn `/checkin` của **MarWuy DC1 Test**, làm theo một dòng trên thẻ rồi bấm **Xem tiến độ mới**.
 
 ## Chị cần quyết định gì?
@@ -21,6 +21,7 @@ Chị Cún có thể duyệt bản Lab ngay trên GitHub. Thành viên gõ `/che
 
 - **Chạy lần đầu.** Làm theo [hướng dẫn cài trên server thử](../README.md#chạy-thử-trong-server-discord-riêng). Mẫu mặc định dùng Voice, emoji và một chủ đề đang mở. Có thể thử đủ 3/3 với một app MarStreak.
 - **Chạy lâu dài.** Dùng [hướng dẫn VPS, sao lưu và khôi phục](VPS.md). Sau khi chị duyệt danh sách nhiệm vụ, thử lại bằng quyền thành viên ở môi trường đích trước khi mở rộng.
+- **Tự chỉnh hoặc giao người sửa code.** Xem chỗ đổi lời bot, hình ảnh, danh sách quest và bảng tự thử. [Hướng dẫn bảo trì](MAINTENANCE.md)
 - **Nghiệm thu vận hành.** Ghi số liệu Voice/Game trước khi mở để có mốc so sánh. Trong tuần beta, theo dõi số người điểm danh mỗi ngày. Người phụ trách VPS theo dõi uptime với mục tiêu trên 99%. Đây là các số liệu cần đo khi chạy thật.
 
 Quyền lệnh theo role, trải nghiệm trên điện thoại thật và độ ổn định dài ngày còn cần kiểm tra ở môi trường vận hành. [Tính năng và cách cấu hình](FEATURES.md) · [Cấu trúc SQLite](../src/checkins.js) · [Bộ kiểm thử](../test/)

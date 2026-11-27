@@ -1,3 +1,4 @@
+import { questNames } from './quest-names.js';
 import { checkInDay, parseResetTime } from './checkins.js';
 import { ChannelType, PermissionFlagsBits } from 'discord.js';
 
@@ -30,12 +31,14 @@ export function createPollQuest(target, resetTime = '00:00') {
   }).format(target.deadline);
   return {
     kind: 'poll',
-    name: 'Bình chọn',
+    name: questNames['poll'].name,
     defaultEnabled: false,
-    eligible({ channels, member, at = new Date() }) {
+    eligible({ channels, member, botMember, at = new Date() }) {
       if (!target || checkInDay(at, resetMinutes) >= deadlineDay) return false;
       const room = channels.get(target.channelId);
-      return room?.type === ChannelType.GuildText && Boolean(member && room.permissionsFor(member)?.has(permissions));
+      return room?.type === ChannelType.GuildText
+        && Boolean(botMember && room.permissionsFor(botMember)?.has(permissions))
+        && Boolean(member && room.permissionsFor(member)?.has(permissions));
     },
     instruction(_assignment, context) {
       if (!target || +(context?.at ?? new Date()) >= target.deadline) return 'Bình chọn này đã đóng.';

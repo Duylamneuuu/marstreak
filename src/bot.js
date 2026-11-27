@@ -2,74 +2,22 @@ import {
   Client, Events, GatewayIntentBits, MessageFlags,
   Routes, SlashCommandBuilder,
 } from 'discord.js';
-import { resolve } from 'node:path';
-import { verifyTargets } from './lab-targets.js';
+import { readConfig } from './config.js';
+import { createQuestBotReader, createReactionTargetReader, verifyTargets } from './lab-targets.js';
 import { createNotificationQueue, deliverQuestUpdate } from './quest-notification.js';
 import { makeCheckInReply } from './checkin-reply.js';
 import { makeQuestBoard, makeQuestUpdate, questRefreshId } from './quest-reply.js';
-import { openCheckInStore, parseResetTime } from './checkins.js';
-import { trackVoice, voiceThresholdMs, voiceTickMs } from './voice-quests.js';
-import { createQuestPool } from './quest-pool.js';
+import { openCheckInStore } from './checkins.js';
+import { trackVoice, voiceTickMs } from './voice-quests.js';
+import { createQuestPool, enabledQuestKinds } from './quest-pool.js';
 import { createNativeQuests } from './native-quests.js';
-import { createPollQuest, readPollTarget } from './poll-quest.js';
+import { createPollQuest } from './poll-quest.js';
 import { createLabCommandQuests } from './integrations/lab-command-quests.js';
 
-const snowflake = /^\d{17,20}$/;
 const commands = [
   new SlashCommandBuilder().setName('checkin').setDescription('Điểm danh, giữ chuỗi và nhận ba nhiệm vụ hôm nay.'),
   new SlashCommandBuilder().setName('quests').setDescription('Xem cách làm và tiến độ ba nhiệm vụ hôm nay.'),
 ];
-
-function readConfig() {
-  const env = process.env;
-  const token = env.DISCORD_TOKEN?.trim();
-  const appId = env.DISCORD_APPLICATION_ID?.trim();
-  const guildId = env.DISCORD_GUILD_ID?.trim();
-  const resetTime = env.CHECKIN_RESET_TIME ?? '00:00';
-  const voiceSeconds = env.LAB_VOICE_SECONDS === undefined
-    ? voiceThresholdMs / 1000 : Number(env.LAB_VOICE_SECONDS);
-  if (!token) throw new Error('Điền DISCORD_TOKEN trong .env.');
-  if (!snowflake.test(appId ?? '')) throw new Error('DISCORD_APPLICATION_ID không hợp lệ.');
-  if (!snowflake.test(guildId ?? '')) throw new Error('DISCORD_GUILD_ID không hợp lệ.');
-  parseResetTime(resetTime);
-  if (!Number.isInteger(voiceSeconds) || voiceSeconds < 1 || voiceSeconds > 86400) {
-    throw new Error('LAB_VOICE_SECONDS cần là số nguyên từ 1 đến 86400.');
-  }
-
-  function id(key) {
-    const value = env[key]?.trim();
-    if (!snowflake.test(value ?? '')) throw new Error('Kiểm tra ID trong ' + key + '.');
-    return value;
-  }
-
-  const voiceIds = [...new Set((env.LAB_VOICE_CHANNEL_IDS ?? '').split(',').map(value => value.trim()))];
-  if (!voiceIds.every(value => snowflake.test(value))) throw new Error('Kiểm tra LAB_VOICE_CHANNEL_IDS.');
-  const hasLegacyReactionTarget = ['LAB_REACTION_CHANNEL_ID', 'LAB_REACTION_MESSAGE_ID', 'LAB_REACTION_EMOJI']
-    .every(key => env[key]?.trim());
-  const reactionMode = env.LAB_REACTION_MODE?.trim() || (hasLegacyReactionTarget ? 'target' : 'any');
-  if (!['any', 'target'].includes(reactionMode)) throw new Error('LAB_REACTION_MODE cần là any hoặc target.');
-  let reactionTarget;
-  if (reactionMode === 'target') {
-    const emoji = env.LAB_REACTION_EMOJI?.trim();
-    if (!emoji || (!snowflake.test(emoji) && !/\p{Emoji}/u.test(emoji))) {
-      throw new Error('LAB_REACTION_EMOJI cần là emoji Unicode hoặc ID emoji tùy chỉnh.');
-    }
-    reactionTarget = { channelId: id('LAB_REACTION_CHANNEL_ID'), messageId: id('LAB_REACTION_MESSAGE_ID'), emoji };
-  }
-  return {
-    token, appId, guildId, resetTime, voiceIds, voiceSeconds, reactionTarget,
-    databasePath: resolve(env.CHECKIN_DB_PATH || 'data/checkins.sqlite'),
-    threadId: env.LAB_COMMUNITY_THREAD_ID?.trim() ? id('LAB_COMMUNITY_THREAD_ID') : undefined,
-    pollTarget: readPollTarget(guildId, env.LAB_POLL_MESSAGE_URL, env.LAB_POLL_CLOSES_AT, env.LAB_QUEST_POOL),
-    questKinds: env.LAB_QUEST_POOL,
-    dynoRollChannel: env.LAB_DYNO_ROLL_CHANNEL_ID ? id('LAB_DYNO_ROLL_CHANNEL_ID') : undefined,
-    zodiacLikesChannel: env.LAB_ZODIAC_LIKES_CHANNEL_ID ? id('LAB_ZODIAC_LIKES_CHANNEL_ID') : undefined,
-    wheatTarotChannel: env.LAB_WHEAT_TAROT_CHANNEL_ID ? id('LAB_WHEAT_TAROT_CHANNEL_ID') : undefined,
-    zodiacExtrasChannel: env.LAB_ZODIAC_QUEST_CHANNEL_ID ? id('LAB_ZODIAC_QUEST_CHANNEL_ID') : undefined,
-    wheatCoinflipChannel: env.LAB_WHEAT_COINFLIP_CHANNEL_ID ? id('LAB_WHEAT_COINFLIP_CHANNEL_ID') : undefined,
-    asterieChannel: env.LAB_ASTERIE_QUEST_CHANNEL_ID ? id('LAB_ASTERIE_QUEST_CHANNEL_ID') : undefined,
-  };
-}
 
 function errorLabel(error) {
   return (error?.name || 'Error') + (error?.code ? ' (' + error.code + ')' : '');
@@ -77,10 +25,13 @@ function errorLabel(error) {
 
 async function start(config) {
   const commandIds = new Map();
-  const sourceBots = new Map();
   const commandQuests = createLabCommandQuests(config);
   const definitions = [...createNativeQuests(config), createPollQuest(config.pollTarget, config.resetTime), ...commandQuests];
   const pool = createQuestPool(definitions, config.questKinds);
+  const enabled = enabledQuestKinds(config.questKinds);
+  const sourceIds = [...new Set(commandQuests.filter(quest => enabled.includes(quest.kind)).map(quest => quest.sourceBotId))];
+  const readSourceBots = createQuestBotReader(sourceIds);
+  const readReactionTarget = createReactionTargetReader(config.reactionTarget);
   const store = openCheckInStore(config.databasePath, config.resetTime);
   const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates,
@@ -97,6 +48,7 @@ async function start(config) {
   let online = false;
   let stopping = false;
   let voiceTimer;
+  let disconnectedAt;
 
   const enqueue = createNotificationQueue();
   function notify(userId, kind, day) {
@@ -173,13 +125,8 @@ async function start(config) {
       if (readyClient.application.id !== config.appId) throw new Error('Token không thuộc app đã cấu hình.');
       const guild = await readyClient.guilds.fetch(config.guildId);
       await verifyTargets(guild, config);
-      for (const id of new Set(commandQuests.map(quest => quest.sourceBotId))) {
-        try {
-          const bot = await guild.members.fetch(id);
-          if (bot.user.bot) sourceBots.set(id, bot);
-        } catch (error) {
-          console.warn('Tạm dừng giao quest từ bot ' + id + ' (' + errorLabel(error) + ').');
-        }
+      for (const [id, member] of await readSourceBots(guild)) {
+        if (!member) console.warn('Tạm dừng giao quest từ bot ' + id + '. Kiểm tra app trong server.');
       }
       for (const command of commands) {
         const registered = await readyClient.rest.post(Routes.applicationGuildCommands(config.appId, guild.id), {
@@ -220,7 +167,6 @@ async function start(config) {
         channels: interaction.guild.channels.cache,
         member: interaction.member,
         botMember: interaction.guild.members.me,
-        sourceBots,
         at,
       } : undefined;
       const boardOptions = {
@@ -228,7 +174,26 @@ async function start(config) {
         checkInCommand: commandMention('checkin'),
       };
       voice.checkpoint(userId, Date.now());
-      const eligibleKinds = context ? pool.eligibleKinds(context) : [];
+      const day = store.currentDay(at);
+      const assigned = store.getQuests(config.guildId, userId, day);
+      if (context && !assigned.length) {
+        const room = context.channels.get(config.reactionTarget?.channelId);
+        [context.sourceBots, context.reactionMessage] = await Promise.all([
+          readSourceBots(interaction.guild),
+          enabled.includes('reaction') ? readReactionTarget(room) : undefined,
+        ]);
+        // Permission and session changes can arrive while the requests are in flight.
+        if (!online || stopping) {
+          await interaction.editReply('Wủy đang kết nối lại. Bạn thử sau một chút nha.');
+          return;
+        }
+        context.botMember = interaction.guild.members.me;
+      }
+      if (day !== store.currentDay()) {
+        await interaction.editReply('Sang ngày mới rồi. Bạn mở lại lệnh để xem việc hôm nay nha.');
+        return;
+      }
+      const eligibleKinds = context && !assigned.length ? pool.eligibleKinds(context) : [];
       if (refresh || interaction.commandName === 'quests') {
         const quests = store.questsAfterCheckIn(config.guildId, userId, at, eligibleKinds);
         await interaction.editReply(await makeQuestBoard(quests, boardOptions));
@@ -254,15 +219,25 @@ async function start(config) {
   }));
 
   // One test guild. Clear the clock on both resumable and terminal disconnects.
-  client.on(Events.ShardDisconnect, pause);
-  client.on(Events.ShardReconnecting, pause);
-  client.on(Events.ShardReady, handle('Lỗi khôi phục Voice', resume));
-  client.on(Events.ShardResume, handle('Lỗi khôi phục Voice', resume));
+  function disconnect() {
+    if (initialized) disconnectedAt ??= new Date();
+    pause();
+  }
+
+  function gatewayReady() {
+    disconnectedAt = undefined;
+    resume();
+  }
+
+  client.on(Events.ShardDisconnect, disconnect);
+  client.on(Events.ShardReconnecting, disconnect);
+  client.on(Events.ShardReady, handle('Lỗi khôi phục Voice', gatewayReady));
+  client.on(Events.ShardResume, handle('Lỗi khôi phục Voice', gatewayReady));
   client.on(Events.GuildUnavailable, guild => {
     if (guild.id === config.guildId) pause();
   });
   client.on(Events.GuildAvailable, handle('Lỗi khôi phục Voice', guild => {
-    if (guild.id === config.guildId) resume();
+    if (guild.id === config.guildId && !disconnectedAt) resume();
   }));
 
   client.on(Events.VoiceStateUpdate, handle('Lỗi theo dõi Voice', (before, after) => {
@@ -272,8 +247,8 @@ async function start(config) {
   }));
 
   function completeQuestFromEvent(kind, event) {
-    if (!online) return;
-    const result = pool.completeFromEvent(store, config.guildId, kind, event);
+    if (!initialized || (!online && !disconnectedAt)) return;
+    const result = pool.completeFromEvent(store, config.guildId, kind, event, new Date(), disconnectedAt);
     if (result) return notify(result.userId, kind, result.day);
   }
 

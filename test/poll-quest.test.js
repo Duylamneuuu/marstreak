@@ -28,7 +28,7 @@ test('Poll nằm ngoài danh sách mặc định và chỉ giao trước hạn, 
   const room = { type: ChannelType.GuildText, permissionsFor: () => ({
     has: flags => flags.includes(PermissionFlagsBits.ViewChannel) && flags.includes(PermissionFlagsBits.ReadMessageHistory),
   }) };
-  const context = { channels: new Map([[channel, room]]), member: {}, at: checkIn };
+  const context = { channels: new Map([[channel, room]]), member: {}, botMember: {}, at: checkIn };
   const definitions = [...otherQuests, quest];
   assert.deepEqual(createQuestPool(definitions).eligibleKinds(context), otherKinds);
   const enabled = createQuestPool(definitions, 'voice,reaction,community,poll');

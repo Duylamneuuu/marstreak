@@ -1,3 +1,4 @@
+import { questNames } from '../quest-names.js';
 import { ChannelType, InteractionType, MessageFlags, MessageType, PermissionFlagsBits } from 'discord.js';
 
 const snowflake = /^\d{17,20}$/;
@@ -30,13 +31,16 @@ export function createSlashCommandQuest(definition) {
   const { kind, name, channelId, command, appName, option } = definition;
   return {
     kind,
-    name,
+    name: name ?? questNames[kind]?.name ?? kind,
     sourceBotId: definition.authorId ?? definition.appId,
     defaultEnabled: false,
-    eligible: ({ channels, member, sourceBots }) => {
+    eligible: ({ channels, member, botMember, sourceBots }) => {
       const channel = channels.get(channelId);
       const bot = sourceBots?.get(definition.authorId ?? definition.appId);
-      return channel?.type === ChannelType.GuildText && Boolean(bot && channel.permissionsFor(bot)?.has(PermissionFlagsBits.ViewChannel)) && Boolean(member && channel.permissionsFor(member)?.has([
+      return channel?.type === ChannelType.GuildText
+        && Boolean(botMember && channel.permissionsFor(botMember)?.has(PermissionFlagsBits.ViewChannel))
+        && Boolean(bot && channel.permissionsFor(bot)?.has(PermissionFlagsBits.ViewChannel))
+        && Boolean(member && channel.permissionsFor(member)?.has([
         PermissionFlagsBits.ViewChannel, PermissionFlagsBits.UseApplicationCommands,
       ]));
     },

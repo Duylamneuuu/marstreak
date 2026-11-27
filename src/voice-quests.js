@@ -32,9 +32,12 @@ export function trackVoice(store, guildId, onComplete, thresholdMs = voiceThresh
   return {
     checkpoint,
     update(userId, eligible, now = Date.now()) {
-      checkpoint(userId, now);
-      if (eligible) active.set(userId, now);
-      else active.delete(userId);
+      try {
+        checkpoint(userId, now);
+      } finally {
+        if (eligible) active.set(userId, now);
+        else active.delete(userId);
+      }
     },
     tick(now = Date.now()) {
       if (active.size === 0) return;
